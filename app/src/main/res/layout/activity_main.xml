@@ -11,14 +11,14 @@
         android:layout_height="match_parent"></FrameLayout>
     <FrameLayout
         android:id="@+id/left_menu_layout"
-        android:layout_width="320dp"
+        android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="start"
-        android:background="#ffffcc"></FrameLayout>
+        android:background="@color/colorOffWhite"></FrameLayout>
     <FrameLayout
         android:id="@+id/right_menu_layout"
-        android:layout_width="320dp"
+        android:layout_width="240dp"
         android:layout_height="match_parent"
         android:layout_gravity="end"
-        android:background="#ffffcc"></FrameLayout>
+        android:background="@color/colorOffWhite"></FrameLayout>
 </android.support.v4.widget.DrawerLayout>

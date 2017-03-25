@@ -11,18 +11,18 @@
         android:layout_height="wrap_content"
         android:text="打开蓝牙"
         android:textColor="@color/colorClickable"
-        android:layout_marginTop="35dp"
-        app:switchPadding="100dp"
-        android:textSize="20sp"
+        android:layout_marginTop="20dp"
+        app:switchPadding="90dp"
+        android:textSize="15sp"
         />
     <android.support.v7.widget.SwitchCompat
         android:id="@+id/sc_advanced_function"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="高级功能"
-        android:layout_marginTop="20dp"
-        app:switchPadding="100dp"
-        android:textSize="20sp"
+        android:layout_marginTop="18dp"
+        app:switchPadding="90dp"
+        android:textSize="15sp"
         android:clickable="false"
         android:textColor="@color/colorUnClickable"
         />
@@ -31,15 +31,15 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="15dp"
+        android:layout_marginTop="10dp"
         android:gravity="center_horizontal">
         <TextView
             android:id="@+id/tv_scan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:text="扫    描"
-            android:layout_marginRight="58dp"
-            android:textSize="20sp"
+            android:layout_marginRight="51dp"
+            android:textSize="15sp"
             android:textColor="@color/colorUnClickable"
             android:layout_gravity="center_vertical" />
         <Button
@@ -47,15 +47,40 @@
             android:layout_width="40dp"
             android:layout_height="40dp"
             android:background="@drawable/scan_btn_bg"
-            android:layout_marginLeft="58dp"
+            android:layout_marginLeft="51dp"
             android:layout_gravity="center_vertical"
             android:clickable="false"/>
     </LinearLayout>
+    <TextView
+        android:id="@+id/tv_paired_devices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="已配对设备"
+        android:textColor="@color/lightgray"
+        android:layout_gravity="left"
+        android:visibility="invisible"/>
     <android.support.v7.widget.RecyclerView
-        android:id="@+id/rv_devices"
+        android:id="@+id/rv_paired_devices"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1"></android.support.v7.widget.RecyclerView>
+        android:layout_gravity="left"
+        android:layout_weight="1"
+        android:visibility="invisible"></android.support.v7.widget.RecyclerView>
+    <TextView
+        android:id="@+id/tv_available_devices"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="可用设备"
+        android:textColor="@color/lightgray"
+        android:layout_gravity="left"
+        android:visibility="invisible"/>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_available_devices"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_gravity="left"
+        android:layout_weight="1"
+        android:visibility="invisible"></android.support.v7.widget.RecyclerView>
     <Button
         android:id="@+id/btn_exit"
         android:layout_width="wrap_content"

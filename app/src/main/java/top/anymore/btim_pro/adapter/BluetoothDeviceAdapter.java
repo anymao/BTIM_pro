@@ -33,7 +33,12 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
     public void onBindViewHolder(ViewHolder holder, int position) {
         BluetoothDevice device = mDeviceList.get(position);
         holder.tvDeviceName.setText(device.getName());
-        holder.tvDeviceState.setText("on");
+        if (device.getBondState() == BluetoothDevice.BOND_BONDED){
+            holder.tvDeviceState.setText("已配对");
+        }else {
+            holder.tvDeviceState.setText("可连接");
+        }
+
     }
 
     @Override

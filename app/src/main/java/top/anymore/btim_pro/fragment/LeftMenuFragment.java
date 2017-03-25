@@ -6,7 +6,8 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
-import android.graphics.Color;
+import android.graphics.drawable.AnimationDrawable;
+import android.graphics.drawable.Drawable;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
@@ -35,17 +36,18 @@ import top.anymore.btim_pro.logutil.LogUtil;
 public class LeftMenuFragment extends Fragment {
     private static final String tag = "LeftMenuFragment";
     private SwitchCompat scOpenBluetooth,scAdvancedFunction;//两个开关
-    private TextView tvScan;
+    private TextView tvScan,tvPairedDevices, tvAvailableDevices;
     private Button btnScan,btnExit;//扫描键和退出按钮
-    private RecyclerView rvDevices;//设备列表
+    private RecyclerView rvPairedDevices, rvAvailableDevices;//设备列表
     private BluetoothUtil mBluetoothUtil;
-    private List<BluetoothDevice> mDeviceList;
-    private BluetoothDeviceAdapter mBluetoothDeviceAdapter;
+    private List<BluetoothDevice> mPairedDeviceList,mAvailableDeviceList;
+    private BluetoothDeviceAdapter mPairedDeviceAdapter,mAvailableDeviceAdapter;
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBluetoothUtil = new BluetoothUtil();
-        mDeviceList = new ArrayList<>();
+        mPairedDeviceList = new ArrayList<>();
+        mAvailableDeviceList = new ArrayList<>();
     }
 
     @Nullable
@@ -60,7 +62,10 @@ public class LeftMenuFragment extends Fragment {
         btnScan = (Button) leftMenuLayout.findViewById(R.id.btn_scan);
         btnExit = (Button) leftMenuLayout.findViewById(R.id.btn_exit);
         tvScan = (TextView) leftMenuLayout.findViewById(R.id.tv_scan);
-        rvDevices = (RecyclerView) leftMenuLayout.findViewById(R.id.rv_devices);
+        rvPairedDevices = (RecyclerView) leftMenuLayout.findViewById(R.id.rv_paired_devices);
+        rvAvailableDevices = (RecyclerView) leftMenuLayout.findViewById(R.id.rv_available_devices);
+        tvPairedDevices = (TextView) leftMenuLayout.findViewById(R.id.tv_paired_devices);
+        tvAvailableDevices = (TextView) leftMenuLayout.findViewById(R.id.tv_available_devices);
         return leftMenuLayout;
     }
 
@@ -106,11 +111,17 @@ public class LeftMenuFragment extends Fragment {
      * 初始化设备列表，这里的设备都是配对过的设备
      */
     private void initDevicesList(){
-        mDeviceList = mBluetoothUtil.getPairedDevices();
-        mBluetoothDeviceAdapter = new BluetoothDeviceAdapter(mDeviceList);
-        LinearLayoutManager layoutManager = new LinearLayoutManager(getContext());
-        rvDevices.setLayoutManager(layoutManager);
-        rvDevices.setAdapter(mBluetoothDeviceAdapter);
+        //对已配对设备列表的初始化
+        mPairedDeviceList = mBluetoothUtil.getPairedDevices();
+        mPairedDeviceAdapter = new BluetoothDeviceAdapter(mPairedDeviceList);
+        LinearLayoutManager layoutManager1 = new LinearLayoutManager(getContext());
+        rvPairedDevices.setLayoutManager(layoutManager1);
+        rvPairedDevices.setAdapter(mPairedDeviceAdapter);
+        //对扫描附近可用设备的初始化
+        mAvailableDeviceAdapter = new BluetoothDeviceAdapter(mAvailableDeviceList);
+        LinearLayoutManager layoutManager2 = new LinearLayoutManager(getContext());
+        rvAvailableDevices.setLayoutManager(layoutManager2);
+        rvAvailableDevices.setAdapter(mAvailableDeviceAdapter);
     }
 
     /**
@@ -120,6 +131,11 @@ public class LeftMenuFragment extends Fragment {
         IntentFilter filter = new IntentFilter();
         //监听蓝牙状态改变
         filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
+        //监听扫描状态改变
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_STARTED);
+        filter.addAction(BluetoothAdapter.ACTION_DISCOVERY_FINISHED);
+        //监听新设备加入
+        filter.addAction(BluetoothDevice.ACTION_FOUND);
         //注册广播
         getActivity().registerReceiver(receiver,filter);
     }
@@ -129,6 +145,7 @@ public class LeftMenuFragment extends Fragment {
             switch (v.getId()){
                 case R.id.btn_scan:
                     LogUtil.v(tag,"扫描");
+                    mBluetoothUtil.startDiscovery();
                     break;
                 case R.id.btn_exit:
                     LogUtil.v(tag,"退出");
@@ -156,6 +173,28 @@ public class LeftMenuFragment extends Fragment {
                 }
 
             }
+            //监听当扫描到新设备的广播
+            if (action.equals(BluetoothDevice.ACTION_FOUND)){
+                BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                if (device.getBondState() != BluetoothDevice.BOND_BONDED){
+                    mAvailableDeviceList.add(device);
+                    mAvailableDeviceAdapter.notifyDataSetChanged();
+                }
+            }
+            //监听当前扫描状态
+
+            //扫描开始
+            if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)){
+//                Drawable drawable = getResources().getDrawable(R.drawable.scan_ing_anim);
+                AnimationDrawable animationDrawable = (AnimationDrawable) getResources().getDrawable(R.drawable.scan_ing_anim);
+                btnScan.setBackground(animationDrawable);
+                animationDrawable.start();
+            }
+            //扫描结束
+            if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_FINISHED)){
+                Drawable drawable = getResources().getDrawable(R.drawable.scan_btn_bg);
+                btnScan.setBackground(drawable);
+            }
         }
     };
 
@@ -169,11 +208,19 @@ public class LeftMenuFragment extends Fragment {
             scAdvancedFunction.setTextColor(getResources().getColor(R.color.colorClickable));
             tvScan.setTextColor(getResources().getColor(R.color.colorClickable));
             btnScan.setClickable(true);
+            tvPairedDevices.setVisibility(View.VISIBLE);
+            rvPairedDevices.setVisibility(View.VISIBLE);
+            tvAvailableDevices.setVisibility(View.VISIBLE);
+            rvAvailableDevices.setVisibility(View.VISIBLE);
         }else {
             scAdvancedFunction.setClickable(false);
             scAdvancedFunction.setTextColor(getResources().getColor(R.color.colorUnClickable));
             tvScan.setTextColor(getResources().getColor(R.color.colorUnClickable));
             btnScan.setClickable(false);
+            tvPairedDevices.setVisibility(View.INVISIBLE);
+            rvPairedDevices.setVisibility(View.INVISIBLE);
+            tvAvailableDevices.setVisibility(View.INVISIBLE);
+            rvAvailableDevices.setVisibility(View.INVISIBLE);
         }
     }
 }

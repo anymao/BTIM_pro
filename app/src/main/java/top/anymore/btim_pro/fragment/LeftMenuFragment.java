@@ -175,8 +175,9 @@ public class LeftMenuFragment extends Fragment {
             }
             //监听当扫描到新设备的广播
             if (action.equals(BluetoothDevice.ACTION_FOUND)){
+                LogUtil.v(tag,"发现新设备");
                 BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
-                if (device.getBondState() != BluetoothDevice.BOND_BONDED){
+                if (device.getBondState() != BluetoothDevice.BOND_BONDED && !mAvailableDeviceList.contains(device)){
                     mAvailableDeviceList.add(device);
                     mAvailableDeviceAdapter.notifyDataSetChanged();
                 }
@@ -186,7 +187,8 @@ public class LeftMenuFragment extends Fragment {
             //扫描开始
             if (action.equals(BluetoothAdapter.ACTION_DISCOVERY_STARTED)){
 //                Drawable drawable = getResources().getDrawable(R.drawable.scan_ing_anim);
-                AnimationDrawable animationDrawable = (AnimationDrawable) getResources().getDrawable(R.drawable.scan_ing_anim);
+                AnimationDrawable animationDrawable = (AnimationDrawable) getResources()
+                        .getDrawable(R.drawable.scan_ing_anim);
                 btnScan.setBackground(animationDrawable);
                 animationDrawable.start();
             }
@@ -207,7 +209,7 @@ public class LeftMenuFragment extends Fragment {
             scAdvancedFunction.setClickable(true);
             scAdvancedFunction.setTextColor(getResources().getColor(R.color.colorClickable));
             tvScan.setTextColor(getResources().getColor(R.color.colorClickable));
-            btnScan.setClickable(true);
+            btnScan.setEnabled(true);
             tvPairedDevices.setVisibility(View.VISIBLE);
             rvPairedDevices.setVisibility(View.VISIBLE);
             tvAvailableDevices.setVisibility(View.VISIBLE);
@@ -216,7 +218,7 @@ public class LeftMenuFragment extends Fragment {
             scAdvancedFunction.setClickable(false);
             scAdvancedFunction.setTextColor(getResources().getColor(R.color.colorUnClickable));
             tvScan.setTextColor(getResources().getColor(R.color.colorUnClickable));
-            btnScan.setClickable(false);
+            btnScan.setEnabled(false);
             tvPairedDevices.setVisibility(View.INVISIBLE);
             rvPairedDevices.setVisibility(View.INVISIBLE);
             tvAvailableDevices.setVisibility(View.INVISIBLE);

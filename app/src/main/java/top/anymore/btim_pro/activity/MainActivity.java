@@ -26,6 +26,10 @@ public class MainActivity extends AppCompatActivity {
     private DrawerLayout mDrawerLayout;//MainActivity的根布局
     private ActionBar mActionBar;
     private String mTitle;//用于存储最开始的标题
+    //左中右碎片实例
+    private LeftMenuFragment mLeftMenuFragment;
+    private ContentFragment mContentFragment;
+    private RightMenuFragment mRightMenuFragment;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -72,16 +76,8 @@ public class MainActivity extends AppCompatActivity {
                 //当右边抽屉打开时候点击设置关闭右边抽屉
                 if (mDrawerLayout.isDrawerOpen(rightMenuLayout)){
                     mDrawerLayout.closeDrawer(rightMenuLayout,true);
-                    //显示左边图标
-                    mActionBar.setDisplayHomeAsUpEnabled(true);
-                    //使左上角图标可用
-                    mActionBar.setHomeButtonEnabled(true);
                 }else {//否则打开右边抽屉
                     mDrawerLayout.openDrawer(rightMenuLayout,true);
-                    //关闭左边图标
-                    mActionBar.setDisplayHomeAsUpEnabled(false);
-                    //使左上角图标不可用
-                    mActionBar.setHomeButtonEnabled(false);
                 }
                 break;
         }
@@ -110,12 +106,14 @@ public class MainActivity extends AppCompatActivity {
         contentLayout = (FrameLayout) findViewById(R.id.content_layout);
         mTitle = (String) getTitle();
         mActionBar = getSupportActionBar();
-
+        mLeftMenuFragment = new LeftMenuFragment();
+        mContentFragment = new ContentFragment();
+        mRightMenuFragment = new RightMenuFragment();
         //动态加载三个碎片
         getSupportFragmentManager().beginTransaction()
-                .add(R.id.left_menu_layout,new LeftMenuFragment())
-                .add(R.id.content_layout,new ContentFragment())
-                .add(R.id.right_menu_layout,new RightMenuFragment())
+                .add(R.id.left_menu_layout,mLeftMenuFragment)
+                .add(R.id.content_layout,mContentFragment)
+                .add(R.id.right_menu_layout,mRightMenuFragment)
                 .commit();
         //初始化mActionBarDrawerToggle，并且重写其中的方法，以达到监听抽屉状态的目的
         mActionBarDrawerToggle = new ActionBarDrawerToggle(MainActivity.this,mDrawerLayout,R.string.open,R.string.close){
@@ -130,6 +128,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.right_menu_layout:
                         mActionBar.setTitle("设置");
+                        //关闭左边图标
+                        mActionBar.setDisplayHomeAsUpEnabled(false);
+                        //使左上角图标不可用
+                        mActionBar.setHomeButtonEnabled(false);
 //                        LogUtil.v(tag,"右侧菜单打开");
                         break;
                 }
@@ -148,6 +150,10 @@ public class MainActivity extends AppCompatActivity {
                         break;
                     case R.id.right_menu_layout:
                         mActionBar.setTitle(mTitle);
+                        //显示左边图标
+                        mActionBar.setDisplayHomeAsUpEnabled(true);
+                        //使左上角图标可用
+                        mActionBar.setHomeButtonEnabled(true);
 //                        LogUtil.v(tag,"右侧菜单关闭");
                         break;
                 }
@@ -163,5 +169,12 @@ public class MainActivity extends AppCompatActivity {
         mActionBar.setDisplayHomeAsUpEnabled(true);
         //使左上角图标可用
         mActionBar.setHomeButtonEnabled(true);
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        //注销广播接收器
+        unregisterReceiver(mLeftMenuFragment.receiver);
     }
 }

@@ -2,7 +2,6 @@ package top.anymore.btim_pro.bluetooth;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
-import android.util.Log;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -136,13 +135,13 @@ public class BluetoothUtil {
     public List<BluetoothDevice> getPairedDevices(){
         List<BluetoothDevice> pairedDevices = new ArrayList<>();
         if (!mBluetoothAdapter.isEnabled()){
-            Log.v(tag,"蓝牙已关闭，获取配对列表失败");
+            LogUtil.v(tag,"蓝牙已关闭，获取配对列表失败");
             return pairedDevices;
         }
         //从集合中转换成列表，方便之后在recylerview中展示
         Set<BluetoothDevice> pairedDeviceSet = mBluetoothAdapter.getBondedDevices();
         for (BluetoothDevice device : pairedDeviceSet) {
-            Log.v(tag,device.getName());
+            LogUtil.v(tag,device.getName());
             pairedDevices.add(device);
         }
         return pairedDevices;

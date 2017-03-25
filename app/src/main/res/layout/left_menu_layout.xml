@@ -49,7 +49,7 @@
             android:background="@drawable/scan_btn_bg"
             android:layout_marginLeft="51dp"
             android:layout_gravity="center_vertical"
-            android:clickable="false"/>
+            android:enabled="false"/>
     </LinearLayout>
     <TextView
         android:id="@+id/tv_paired_devices"

@@ -15,37 +15,37 @@
         app:switchPadding="90dp"
         android:textSize="15sp"
         />
-    <android.support.v7.widget.SwitchCompat
-        android:id="@+id/sc_advanced_function"
-        android:layout_width="wrap_content"
+
+    <Button
+        android:id="@+id/btn_advanced_function"
+        android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="高级功能"
-        android:layout_marginTop="18dp"
-        app:switchPadding="90dp"
         android:textSize="15sp"
-        android:clickable="false"
-        android:textColor="@color/colorUnClickable"
-        />
+        android:background="@drawable/btn_af_bg"
+        android:paddingRight="140dp"
+        android:enabled="false"/>
+
     <LinearLayout
         android:id="@+id/layout_scan"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:orientation="horizontal"
-        android:layout_marginTop="10dp"
+        android:layout_marginTop="0dp"
         android:gravity="center_horizontal">
         <TextView
             android:id="@+id/tv_scan"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
-            android:text="扫    描"
+            android:text="扫       描"
             android:layout_marginRight="51dp"
             android:textSize="15sp"
             android:textColor="@color/colorUnClickable"
             android:layout_gravity="center_vertical" />
         <Button
             android:id="@+id/btn_scan"
-            android:layout_width="40dp"
-            android:layout_height="40dp"
+            android:layout_width="35dp"
+            android:layout_height="35dp"
             android:background="@drawable/scan_btn_bg"
             android:layout_marginLeft="51dp"
             android:layout_gravity="center_vertical"

@@ -3,10 +3,12 @@ package top.anymore.btim_pro.activity;
 import android.content.res.Configuration;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
+import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -30,6 +32,8 @@ public class MainActivity extends AppCompatActivity {
     private LeftMenuFragment mLeftMenuFragment;
     private ContentFragment mContentFragment;
     private RightMenuFragment mRightMenuFragment;
+    //退出（保留服务标记）
+    private boolean isExit = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -176,5 +180,45 @@ public class MainActivity extends AppCompatActivity {
         super.onDestroy();
         //注销广播接收器
         unregisterReceiver(mLeftMenuFragment.receiver);
+        unregisterReceiver(mContentFragment.receiver);
+        unbindService(mContentFragment.serviceConnection);
+    }
+
+    /**
+     * 实现了功能，当左抽屉或者右抽屉打开时候，关闭抽屉
+     * 否则弹出提示“再按一次返回到桌面”，并且在1.5秒内再次点击，会返回桌面
+     */
+    @Override
+    public void onBackPressed() {
+        boolean isLeftDrawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.START);
+        boolean isRightDrawerOpen = mDrawerLayout.isDrawerOpen(GravityCompat.END);
+        if (isLeftDrawerOpen || isRightDrawerOpen){
+            if (isLeftDrawerOpen){
+                mDrawerLayout.closeDrawer(GravityCompat.START,true);
+            }
+            if (isRightDrawerOpen){
+                mDrawerLayout.closeDrawer(GravityCompat.END,true);
+            }
+        }else{
+            //退出操作，但是服务运行
+            if (!isExit){
+                Toast.makeText(MainActivity.this,"再按一次返回到桌面",Toast.LENGTH_SHORT).show();
+                isExit = true;
+                new Thread(new Runnable() {
+                    @Override
+                    public void run() {
+                        try {
+                            Thread.sleep(1500);
+                        } catch (InterruptedException e) {
+                            e.printStackTrace();
+                        }
+                        isExit = false;
+                    }
+                }).start();
+            }else {
+                finish();
+            }
+        }
+//        super.onBackPressed();
     }
 }

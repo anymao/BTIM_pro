@@ -19,15 +19,15 @@ public class BluetoothConnectThread extends Thread{
     private static final String tag = "BluetoothConnectThread";
     public static final String UUID_CONNECT_DEFAULT = "00001101-0000-1000-8000-00805F9B34FB";
     public static final String ACTION_BLUETOOTH_CONNECT = "top.anymore.btim_pro.bluetooth.bluetoothconnectthread.action_bluetooth_connect";
-    private String uuid_connect = ACTION_BLUETOOTH_CONNECT;
+    private String uuid_connect = UUID_CONNECT_DEFAULT;
     private BluetoothAdapter mBluetoothAdapter;
     private BluetoothDevice mBluetoothDevice;
     private BluetoothSocket mSocket;
     private Context mContext;
 
-    public BluetoothConnectThread(Context mContext,BluetoothDevice mBluetoothDevice) {
+    public BluetoothConnectThread(Context mContext) {
         this.mContext = mContext;
-        this.mBluetoothDevice = mBluetoothDevice;
+//        this.mBluetoothDevice = mBluetoothDevice;
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null){
             LogUtil.e(tag,"本机没有蓝牙设备，APP出现异常");
@@ -35,7 +35,9 @@ public class BluetoothConnectThread extends Thread{
             LogUtil.v(tag,"本机拥有蓝牙设备");
         }
     }
-
+    public void setTarget(BluetoothDevice device){
+        mBluetoothDevice = device;
+    }
     @Override
     public void run() {
         if (mBluetoothAdapter.isDiscovering()){

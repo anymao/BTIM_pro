@@ -59,7 +59,7 @@ public class CommunicationThread extends Thread{
         String line = "";
         try {
             while ((line=br.readLine()) != null){
-                //Log.v(tag,"get:"+line);
+                LogUtil.v(tag,line);
                 line += "\n";
                 Message msg = Message.obtain();
                 msg.what = ACTION_MSG_GET;

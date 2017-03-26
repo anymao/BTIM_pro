@@ -2,6 +2,7 @@ package top.anymore.btim_pro.fragment;
 
 import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
+import android.bluetooth.BluetoothSocket;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
@@ -26,8 +27,12 @@ import java.util.List;
 
 import top.anymore.btim_pro.R;
 import top.anymore.btim_pro.adapter.BluetoothDeviceAdapter;
+import top.anymore.btim_pro.bluetooth.BluetoothConnectThread;
 import top.anymore.btim_pro.bluetooth.BluetoothUtil;
+import top.anymore.btim_pro.bluetooth.CommunicationThread;
+import top.anymore.btim_pro.bluetooth.CommunicationThreadManager;
 import top.anymore.btim_pro.logutil.LogUtil;
+import top.anymore.btim_pro.service.DataProcessService;
 
 /**
  * Created by anymore on 17-3-23.
@@ -35,19 +40,22 @@ import top.anymore.btim_pro.logutil.LogUtil;
 
 public class LeftMenuFragment extends Fragment {
     private static final String tag = "LeftMenuFragment";
-    private SwitchCompat scOpenBluetooth,scAdvancedFunction;//两个开关
+    private SwitchCompat scOpenBluetooth;
     private TextView tvScan,tvPairedDevices, tvAvailableDevices;
-    private Button btnScan,btnExit;//扫描键和退出按钮
+    private Button btnScan,btnExit,btnAdvancedFunction;//扫描键和退出按钮
     private RecyclerView rvPairedDevices, rvAvailableDevices;//设备列表
     private BluetoothUtil mBluetoothUtil;
     private List<BluetoothDevice> mPairedDeviceList,mAvailableDeviceList;
     private BluetoothDeviceAdapter mPairedDeviceAdapter,mAvailableDeviceAdapter;
+    private BluetoothConnectThread mBluetoothConnectThread;
+    public static final String ACTION_BLUETOOTH_CONNECT = "top.anymore.btim_pro.fragment.leftmenufragment.action_bluetooth_connect";
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         mBluetoothUtil = new BluetoothUtil();
         mPairedDeviceList = new ArrayList<>();
         mAvailableDeviceList = new ArrayList<>();
+
     }
 
     @Nullable
@@ -58,7 +66,7 @@ public class LeftMenuFragment extends Fragment {
         View leftMenuLayout = inflater.inflate(R.layout.left_menu_layout,container,false);
         //控件初始化
         scOpenBluetooth = (SwitchCompat) leftMenuLayout.findViewById(R.id.sc_open_bluetooth);
-        scAdvancedFunction = (SwitchCompat) leftMenuLayout.findViewById(R.id.sc_advanced_function);
+        btnAdvancedFunction = (Button) leftMenuLayout.findViewById(R.id.btn_advanced_function);
         btnScan = (Button) leftMenuLayout.findViewById(R.id.btn_scan);
         btnExit = (Button) leftMenuLayout.findViewById(R.id.btn_exit);
         tvScan = (TextView) leftMenuLayout.findViewById(R.id.tv_scan);
@@ -111,14 +119,15 @@ public class LeftMenuFragment extends Fragment {
      * 初始化设备列表，这里的设备都是配对过的设备
      */
     private void initDevicesList(){
+        mBluetoothConnectThread = new BluetoothConnectThread(getContext());
         //对已配对设备列表的初始化
         mPairedDeviceList = mBluetoothUtil.getPairedDevices();
-        mPairedDeviceAdapter = new BluetoothDeviceAdapter(mPairedDeviceList);
+        mPairedDeviceAdapter = new BluetoothDeviceAdapter(mPairedDeviceList,mBluetoothConnectThread);
         LinearLayoutManager layoutManager1 = new LinearLayoutManager(getContext());
         rvPairedDevices.setLayoutManager(layoutManager1);
         rvPairedDevices.setAdapter(mPairedDeviceAdapter);
         //对扫描附近可用设备的初始化
-        mAvailableDeviceAdapter = new BluetoothDeviceAdapter(mAvailableDeviceList);
+        mAvailableDeviceAdapter = new BluetoothDeviceAdapter(mAvailableDeviceList,mBluetoothConnectThread);
         LinearLayoutManager layoutManager2 = new LinearLayoutManager(getContext());
         rvAvailableDevices.setLayoutManager(layoutManager2);
         rvAvailableDevices.setAdapter(mAvailableDeviceAdapter);
@@ -137,6 +146,7 @@ public class LeftMenuFragment extends Fragment {
         //监听新设备加入
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         //注册广播
+        filter.addAction(BluetoothConnectThread.ACTION_BLUETOOTH_CONNECT);
         getActivity().registerReceiver(receiver,filter);
     }
     private View.OnClickListener listener = new View.OnClickListener() {
@@ -197,6 +207,24 @@ public class LeftMenuFragment extends Fragment {
                 Drawable drawable = getResources().getDrawable(R.drawable.scan_btn_bg);
                 btnScan.setBackground(drawable);
             }
+            //监听连接
+            if (action.equals(BluetoothConnectThread.ACTION_BLUETOOTH_CONNECT)){
+                LogUtil.v(tag,"客户端连入成功");
+                BluetoothSocket socket = mBluetoothConnectThread.getBluetoothSocket();
+                if (socket == null){
+                    LogUtil.v(tag,"GG socket 为空");
+                }else {
+                    LogUtil.v(tag,"perfect ,good job");
+                }
+                CommunicationThread communicationThread = new CommunicationThread(mBluetoothConnectThread.getBluetoothSocket());
+                CommunicationThreadManager.addCommunicationThread(communicationThread);
+                Intent intent1 = new Intent(getContext(), DataProcessService.class);
+//                intent1.putExtra(CommunicationThreadManager.THREAD_POSTION,postion);
+                getActivity().startService(intent1);
+                Intent intent2 = new Intent(ACTION_BLUETOOTH_CONNECT);
+//                intent2.putExtra(CommunicationThreadManager.THREAD_POSTION,postion);
+                getActivity().sendBroadcast(intent2);
+            }
         }
     };
 
@@ -206,8 +234,8 @@ public class LeftMenuFragment extends Fragment {
      */
     private void setFunctionClickable(boolean enable){
         if (enable){
-            scAdvancedFunction.setClickable(true);
-            scAdvancedFunction.setTextColor(getResources().getColor(R.color.colorClickable));
+            btnAdvancedFunction.setEnabled(true);
+            btnAdvancedFunction.setTextColor(getResources().getColor(R.color.colorClickable));
             tvScan.setTextColor(getResources().getColor(R.color.colorClickable));
             btnScan.setEnabled(true);
             tvPairedDevices.setVisibility(View.VISIBLE);
@@ -215,8 +243,8 @@ public class LeftMenuFragment extends Fragment {
             tvAvailableDevices.setVisibility(View.VISIBLE);
             rvAvailableDevices.setVisibility(View.VISIBLE);
         }else {
-            scAdvancedFunction.setClickable(false);
-            scAdvancedFunction.setTextColor(getResources().getColor(R.color.colorUnClickable));
+            btnAdvancedFunction.setEnabled(false);
+            btnAdvancedFunction.setTextColor(getResources().getColor(R.color.colorUnClickable));
             tvScan.setTextColor(getResources().getColor(R.color.colorUnClickable));
             btnScan.setEnabled(false);
             tvPairedDevices.setVisibility(View.INVISIBLE);

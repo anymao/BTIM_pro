@@ -1,7 +1,7 @@
 package top.anymore.btim_pro.entity;
 
 
-import java.sql.Date;
+import java.util.Date;
 
 /**
  * Created by anymore on 17-3-26.
@@ -10,15 +10,15 @@ import java.sql.Date;
 public class Message {
     public static final int MESSAGE_TYPE_GET = 0;
     public static final int MESSAGE_TYPE_SEND = 1;
-    private Date mDate;
+    private Date mTime;
     private String content;
     private int type;
 
     public Message() {
     }
 
-    public Message(Date mDate, String content, int type) {
-        this.mDate = mDate;
+    public Message(Date mTime, String content, int type) {
+        this.mTime = mTime;
         this.content = content;
         this.type = type;
     }
@@ -40,10 +40,10 @@ public class Message {
     }
 
     public Date getDate() {
-        return mDate;
+        return mTime;
     }
 
-    public void setDate(Date mDate) {
-        this.mDate = mDate;
+    public void setDate(Date time) {
+        this.mTime = time;
     }
 }

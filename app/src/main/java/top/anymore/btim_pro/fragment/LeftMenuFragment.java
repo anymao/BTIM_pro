@@ -157,8 +157,10 @@ public class LeftMenuFragment extends Fragment {
                     LogUtil.v(tag,"扫描");
                     mBluetoothUtil.startDiscovery();
                     break;
+                //整个程序退出，结束服务
                 case R.id.btn_exit:
                     LogUtil.v(tag,"退出");
+                    getActivity().stopService(new Intent(getContext(),DataProcessService.class));
                     getActivity().finish();
                     break;
             }

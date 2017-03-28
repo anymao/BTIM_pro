@@ -7,8 +7,11 @@ import android.view.LayoutInflater;
 import android.view.View;
 import android.view.ViewGroup;
 import android.widget.TextView;
+import android.widget.Toast;
 
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import top.anymore.btim_pro.R;
 import top.anymore.btim_pro.bluetooth.BluetoothConnectThread;
@@ -20,9 +23,11 @@ import top.anymore.btim_pro.bluetooth.BluetoothConnectThread;
 public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.ViewHolder>{
     private List<BluetoothDevice> mDeviceList;
     private BluetoothConnectThread mBluetoothConnectThread;
+    private Map<BluetoothDevice,Boolean> isConnected;
     public BluetoothDeviceAdapter(List<BluetoothDevice> mDeviceList,BluetoothConnectThread mBluetoothConnectThread) {
         this.mDeviceList = mDeviceList;
         this.mBluetoothConnectThread = mBluetoothConnectThread;
+        isConnected = new HashMap<>();
     }
     @Override
     public ViewHolder onCreateViewHolder(ViewGroup parent, int viewType) {
@@ -33,9 +38,15 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
         view.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                int postion = holder.getAdapterPosition();
-                mBluetoothConnectThread.setTarget(mDeviceList.get(postion));
-                mBluetoothConnectThread.start();
+                BluetoothDevice device = mDeviceList.get(holder.getAdapterPosition());
+                if (isConnected.get(device) == null){
+                    mBluetoothConnectThread.setTarget(device);
+                    mBluetoothConnectThread.start();
+                    isConnected.put(device,Boolean.TRUE);
+                }else {
+                    Toast.makeText(context,"正在连接，请稍后",Toast.LENGTH_SHORT).show();
+                }
+
             }
         });
         return holder;

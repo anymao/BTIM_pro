@@ -5,8 +5,8 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 
-import java.sql.Date;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.List;
 
 import top.anymore.btim_pro.entity.Message;
@@ -30,7 +30,7 @@ public class DataProcessUtil {
     public void addData(Message message){
         ContentValues values = new ContentValues();
         values.put("msg_content",message.getContent());
-        values.put("msg_date",message.getDate().toString());
+        values.put("msg_time",message.getDate().getTime());
         values.put("msg_type",message.getType());
         mDatabase.insert("Message",null,values);
         values.clear();
@@ -56,12 +56,12 @@ public class DataProcessUtil {
         if (cursor.moveToFirst()){
             do{
                 String msg_content;
-                Date msg_date;
+                Date msg_time;
                 int msg_type;
                 msg_content = cursor.getString(cursor.getColumnIndex("msg_content"));
-                msg_date =Date.valueOf(cursor.getColumnName(cursor.getColumnIndex("msg_date")));
+                msg_time = new Date(cursor.getInt(cursor.getColumnIndex("msg_time")));
                 msg_type = cursor.getInt(cursor.getColumnIndex("msg_type"));
-                messages.add(new Message(msg_date,msg_content,msg_type));
+                messages.add(new Message(msg_time,msg_content,msg_type));
             }while (cursor.moveToNext());
         }
         cursor.close();

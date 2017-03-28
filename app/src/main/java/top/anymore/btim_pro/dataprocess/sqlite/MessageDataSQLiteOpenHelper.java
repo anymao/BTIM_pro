@@ -13,11 +13,10 @@ import top.anymore.btim_pro.logutil.LogUtil;
 public class MessageDataSQLiteOpenHelper extends SQLiteOpenHelper{
     private static final String tag = "MessageDataSQLiteOpenHelper";
     public static final String CREATE_MESSAGE = "create table Message (" +
-            "id integer primary key autoincrement," +
-            "msg_content text" +
-            "msg_date date" +
-            "msg_time time" +
-            "msg_type integer)";
+            "id integer primary key autoincrement" +
+            ", msg_content text" +
+            ", msg_time integer" +//时间用于存储毫秒数
+            ", msg_type int2)";
     private Context mContext;
     public MessageDataSQLiteOpenHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);

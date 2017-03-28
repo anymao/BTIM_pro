@@ -32,7 +32,7 @@ public class MainActivity extends AppCompatActivity {
     private LeftMenuFragment mLeftMenuFragment;
     private ContentFragment mContentFragment;
     private RightMenuFragment mRightMenuFragment;
-    //退出（保留服务标记）
+    //退出(保留服务)标记
     private boolean isExit = false;
     @Override
     protected void onCreate(Bundle savedInstanceState) {

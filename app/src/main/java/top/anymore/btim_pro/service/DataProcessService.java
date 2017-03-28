@@ -6,7 +6,7 @@ import android.os.Binder;
 import android.os.Handler;
 import android.os.IBinder;
 
-import java.sql.Date;
+import java.util.Date;
 
 import top.anymore.btim_pro.bluetooth.CommunicationThread;
 import top.anymore.btim_pro.bluetooth.CommunicationThreadManager;
@@ -21,15 +21,17 @@ public class DataProcessService extends Service {
     private Handler mHandler = new Handler(){
         @Override
         public void handleMessage(final android.os.Message msg) {
+//            LogUtil.v(tag,"info:"+msg.obj);
+            final String msg_content = (String) msg.obj;
             switch (msg.what){
                 case CommunicationThread.ACTION_MSG_GET:
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            String msg_content = (String) msg.obj;
-                            Date msg_date = new Date(System.currentTimeMillis());
+                            LogUtil.v(tag,"msg_content:"+msg_content);
+                            Date msg_time = new Date(System.currentTimeMillis());
                             int msg_type = Message.MESSAGE_TYPE_GET;
-                            Message message = new Message(msg_date,msg_content,msg_type);
+                            Message message = new Message(msg_time,msg_content,msg_type);
                             mDataProcessUtil.addData(message);
                         }
                     }).start();
@@ -38,10 +40,10 @@ public class DataProcessService extends Service {
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
-                            String msg_content = (String) msg.obj;
-                            Date msg_date = new Date(System.currentTimeMillis());
+                            LogUtil.v(tag,"msg_content:"+msg_content);
+                            Date msg_time = new Date(System.currentTimeMillis());
                             int msg_type = Message.MESSAGE_TYPE_SEND;
-                            Message message = new Message(msg_date,msg_content,msg_type);
+                            Message message = new Message(msg_time,msg_content,msg_type);
                             mDataProcessUtil.addData(message);
                         }
                     }).start();
@@ -71,6 +73,13 @@ public class DataProcessService extends Service {
         LogUtil.v(tag,"mCommunicationThread.start();");
         return mBinder;
     }
+
+    @Override
+    public void onDestroy() {
+        super.onDestroy();
+        LogUtil.v(tag,"onDestroy");
+    }
+
     public class CommunicationBinder extends Binder{
         public void sendMessage(String msg_content){
             mCommunicationThread.send(msg_content);

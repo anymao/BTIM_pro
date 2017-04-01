@@ -23,14 +23,25 @@ public class BluetoothUtil {
 
     public static final String VISIBILITY_YES = "已开启,允许周围设备检测到";
     public static final String VISIBILITY_NO = "已关闭,仅允许配对设备检测到";
-
-    public BluetoothUtil() {
+    private volatile static BluetoothUtil mBluetoothUtil;//3.28修改，成为单例模式
+    private BluetoothUtil() {
         mBluetoothAdapter = BluetoothAdapter.getDefaultAdapter();
         if (mBluetoothAdapter == null){
             LogUtil.e(tag,"本机没有蓝牙设备，APP出现异常");
         }else{
             LogUtil.v(tag,"本机拥有蓝牙设备");
         }
+    }
+
+    public static BluetoothUtil getInstance(){
+        if (mBluetoothUtil == null){
+            synchronized (BluetoothUtil.class){
+                if (mBluetoothUtil == null){
+                    mBluetoothUtil = new BluetoothUtil();
+                }
+            }
+        }
+        return mBluetoothUtil;
     }
 
     /**

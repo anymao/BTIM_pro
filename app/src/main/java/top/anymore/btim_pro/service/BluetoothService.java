@@ -28,7 +28,7 @@ public class BluetoothService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-        mBluetoothUtil = new BluetoothUtil();
+        mBluetoothUtil = BluetoothUtil.getInstance();
     }
 
     @Override

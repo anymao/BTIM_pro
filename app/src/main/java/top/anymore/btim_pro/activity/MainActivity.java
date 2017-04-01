@@ -8,13 +8,13 @@ import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
 import android.support.v7.app.ActionBarDrawerToggle;
 import android.support.v7.app.AppCompatActivity;
-import android.view.Gravity;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.FrameLayout;
 import android.widget.Toast;
 
+import top.anymore.btim_pro.ExtraDataStorage;
 import top.anymore.btim_pro.R;
 import top.anymore.btim_pro.fragment.ContentFragment;
 import top.anymore.btim_pro.fragment.LeftMenuFragment;
@@ -39,6 +39,8 @@ public class MainActivity extends AppCompatActivity {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
         initViews();
+        //test
+        ExtraDataStorage.isUIAlive = true;
     }
     //加载标题栏的功能按钮，在这里主要是右边的设置按钮
     @Override
@@ -181,7 +183,16 @@ public class MainActivity extends AppCompatActivity {
         //注销广播接收器
         unregisterReceiver(mLeftMenuFragment.receiver);
         unregisterReceiver(mContentFragment.receiver);
-        unbindService(mContentFragment.serviceConnection);
+        //解绑服务，使得程序在退出之后持续在后台运行
+        //如果彻底结束后台任务，在左边布局的btnExit的响应事件中会执行stopService操作
+        //stopService操作与unBind操作同时进行，就会使得服务的onDestroy方法执行
+        if (ExtraDataStorage.isServiceBind){
+            LogUtil.v(tag,"[onDestroy]:Service binded,now uunbind");
+            unbindService(mContentFragment.serviceConnection);
+            ExtraDataStorage.isServiceBind = false;
+        }
+        ExtraDataStorage.isUIAlive = false;
+        ExtraDataStorage.isConnected = false;
     }
 
     /**

@@ -25,7 +25,9 @@ import android.widget.TextView;
 import java.util.ArrayList;
 import java.util.List;
 
+import top.anymore.btim_pro.ExtraDataStorage;
 import top.anymore.btim_pro.R;
+import top.anymore.btim_pro.activity.AdvancedFunctionActivity;
 import top.anymore.btim_pro.adapter.BluetoothDeviceAdapter;
 import top.anymore.btim_pro.bluetooth.BluetoothConnectThread;
 import top.anymore.btim_pro.bluetooth.BluetoothUtil;
@@ -33,6 +35,7 @@ import top.anymore.btim_pro.bluetooth.CommunicationThread;
 import top.anymore.btim_pro.bluetooth.CommunicationThreadManager;
 import top.anymore.btim_pro.logutil.LogUtil;
 import top.anymore.btim_pro.service.DataProcessService;
+import top.anymore.btim_pro.service.TemperatureDataService;
 
 /**
  * Created by anymore on 17-3-23.
@@ -52,7 +55,7 @@ public class LeftMenuFragment extends Fragment {
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        mBluetoothUtil = new BluetoothUtil();
+        mBluetoothUtil = BluetoothUtil.getInstance();
         mPairedDeviceList = new ArrayList<>();
         mAvailableDeviceList = new ArrayList<>();
 
@@ -101,6 +104,7 @@ public class LeftMenuFragment extends Fragment {
             initDevicesList();
         }
         //设定监听器
+        btnAdvancedFunction.setOnClickListener(listener);
         btnExit.setOnClickListener(listener);
         btnScan.setOnClickListener(listener);
         scOpenBluetooth.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -147,12 +151,17 @@ public class LeftMenuFragment extends Fragment {
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         //注册广播
         filter.addAction(BluetoothConnectThread.ACTION_BLUETOOTH_CONNECT);
+//        filter.setPriority(100);
         getActivity().registerReceiver(receiver,filter);
     }
     private View.OnClickListener listener = new View.OnClickListener() {
         @Override
         public void onClick(View v) {
             switch (v.getId()){
+                case R.id.btn_advanced_function:
+                    Intent intent = new Intent(getContext(), AdvancedFunctionActivity.class);
+                    startActivity(intent);
+                    break;
                 case R.id.btn_scan:
                     LogUtil.v(tag,"扫描");
                     mBluetoothUtil.startDiscovery();
@@ -160,7 +169,10 @@ public class LeftMenuFragment extends Fragment {
                 //整个程序退出，结束服务
                 case R.id.btn_exit:
                     LogUtil.v(tag,"退出");
-                    getActivity().stopService(new Intent(getContext(),DataProcessService.class));
+                    if (ExtraDataStorage.isServiceStarted){
+                        getActivity().stopService(new Intent(getContext(),DataProcessService.class));
+                        ExtraDataStorage.isServiceStarted = false;
+                    }
                     getActivity().finish();
                     break;
             }
@@ -220,11 +232,13 @@ public class LeftMenuFragment extends Fragment {
                 }
                 CommunicationThread communicationThread = new CommunicationThread(mBluetoothConnectThread.getBluetoothSocket());
                 CommunicationThreadManager.addCommunicationThread(communicationThread);
+                //***********修改逻辑*******************//
                 Intent intent1 = new Intent(getContext(), DataProcessService.class);
-//                intent1.putExtra(CommunicationThreadManager.THREAD_POSTION,postion);
                 getActivity().startService(intent1);
+//                Intent intent1 = new Intent(getContext(), TemperatureDataService.class);
+//                getActivity().startService(intent1);
+                ExtraDataStorage.isServiceStarted = true;
                 Intent intent2 = new Intent(ACTION_BLUETOOTH_CONNECT);
-//                intent2.putExtra(CommunicationThreadManager.THREAD_POSTION,postion);
                 getActivity().sendBroadcast(intent2);
             }
         }

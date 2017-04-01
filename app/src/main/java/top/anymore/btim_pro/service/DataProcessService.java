@@ -8,6 +8,7 @@ import android.os.IBinder;
 
 import java.util.Date;
 
+import top.anymore.btim_pro.ExtraDataStorage;
 import top.anymore.btim_pro.bluetooth.CommunicationThread;
 import top.anymore.btim_pro.bluetooth.CommunicationThreadManager;
 import top.anymore.btim_pro.dataprocess.sqlite.DataProcessUtil;
@@ -22,7 +23,19 @@ public class DataProcessService extends Service {
         @Override
         public void handleMessage(final android.os.Message msg) {
 //            LogUtil.v(tag,"info:"+msg.obj);
+            //经测试，如果在下面的线程中去拿取msg.obj对象，将会得到空对象
+            //我觉得应该是线程同步的问题，就把这个obj对象拿出来作为常量再传递到下面的Message实例中
             final String msg_content = (String) msg.obj;
+            //由isUIAlive判断是否更新界面
+            if (ExtraDataStorage.isUIAlive){
+                LogUtil.v(tag,"需要更新界面");
+                android.os.Message uiMsg = android.os.Message.obtain();
+                uiMsg.what = msg.what;
+                uiMsg.obj = msg.obj;
+                UIHandler.sendMessage(uiMsg);
+            }else {
+                LogUtil.v(tag,"不需要更新界面");
+            }
             switch (msg.what){
                 case CommunicationThread.ACTION_MSG_GET:
                     new Thread(new Runnable() {
@@ -51,6 +64,7 @@ public class DataProcessService extends Service {
             }
         }
     };
+    private Handler UIHandler;
     private CommunicationBinder mBinder = new CommunicationBinder();
     public DataProcessService() {
     }
@@ -59,6 +73,12 @@ public class DataProcessService extends Service {
     public void onCreate() {
         super.onCreate();
         mDataProcessUtil = new DataProcessUtil(getApplicationContext(),"message.db");
+        UIHandler = new Handler(){
+            @Override
+            public void handleMessage(android.os.Message msg) {
+                LogUtil.v(tag,"无操作");
+            }
+        };
     }
 
     @Override
@@ -81,6 +101,9 @@ public class DataProcessService extends Service {
     }
 
     public class CommunicationBinder extends Binder{
+        public void setUIHandler(Handler handler){
+            UIHandler = handler;
+        }
         public void sendMessage(String msg_content){
             mCommunicationThread.send(msg_content);
         }

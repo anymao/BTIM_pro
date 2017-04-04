@@ -7,15 +7,11 @@
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:text="连接状态:未连接" />
-    <ScrollView
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_rooms_state"
         android:layout_width="match_parent"
         android:layout_height="0dp"
-        android:layout_weight="1">
-        <TextView
-            android:id="@+id/tv_record"
-            android:layout_width="match_parent"
-            android:layout_height="match_parent" />
-    </ScrollView>
+        android:layout_weight="1"></android.support.v7.widget.RecyclerView>
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content">

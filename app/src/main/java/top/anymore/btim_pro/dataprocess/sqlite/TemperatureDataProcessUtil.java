@@ -42,36 +42,62 @@ public class TemperatureDataProcessUtil {
             addData(entity);
         }
     }
-    public List<TemperatureDataEntity> getTemperatureDatas(int room_id,int begin,int num){
-        Cursor cursor = mSqLiteDatabase.query("TEMPERATUREDATA",null,"room_id = ?",new String[]{""+room_id},null,null,"time ASC",num+" offset "+begin);
+    public List<TemperatureDataEntity> getTemperatureDatas(int room_id,int skip,int count){
+        Cursor cursor = mSqLiteDatabase.query("TEMPERATUREDATA",null,
+                TemperatureSQLiteHelper.ROOM_ID+" = ?",
+                new String[]{""+room_id},null,null,
+                TemperatureSQLiteHelper.TIME+" DESC",skip + ","+count);
         List<TemperatureDataEntity> entities = new ArrayList<>();
         if (cursor.moveToFirst()){
             do {
 //                int room_id = cursor.getInt(cursor.getColumnIndex("room_id"));
                 long time = cursor.getLong(cursor.getColumnIndex("time"));
                 double real_temper = cursor.getDouble(cursor.getColumnIndex("real_temper"));
-                double warn_temper = cursor.getDouble(cursor.getColumnIndex("waarn_temper"));
+                double warn_temper = cursor.getDouble(cursor.getColumnIndex("warn_temper"));
                 int is_danger = cursor.getInt(cursor.getColumnIndex("is_danger"));
                 int is_handle = cursor.getInt(cursor.getColumnIndex("is_handle"));
                 entities.add(new TemperatureDataEntity(room_id,time,real_temper,warn_temper,is_danger,is_handle));
             }while (cursor.moveToNext());
         }
+        cursor.close();
         return entities;
     }
     public List<TemperatureDataEntity> getTemperatureDatas(int room_id){
-        Cursor cursor = mSqLiteDatabase.query("TEMPERATUREDATA",null,"room_id = ?",new String[]{""+room_id},null,null,"time ASC");
+        Cursor cursor = mSqLiteDatabase.query("TEMPERATUREDATA",null,
+                TemperatureSQLiteHelper.ROOM_ID+" = ?",new String[]{""+room_id},
+                null,null,"time DESC");
         List<TemperatureDataEntity> entities = new ArrayList<>();
         if (cursor.moveToFirst()){
             do {
 //                int room_id = cursor.getInt(cursor.getColumnIndex("room_id"));
                 long time = cursor.getLong(cursor.getColumnIndex("time"));
                 double real_temper = cursor.getDouble(cursor.getColumnIndex("real_temper"));
-                double warn_temper = cursor.getDouble(cursor.getColumnIndex("waarn_temper"));
+                double warn_temper = cursor.getDouble(cursor.getColumnIndex("warn_temper"));
                 int is_danger = cursor.getInt(cursor.getColumnIndex("is_danger"));
                 int is_handle = cursor.getInt(cursor.getColumnIndex("is_handle"));
                 entities.add(new TemperatureDataEntity(room_id,time,real_temper,warn_temper,is_danger,is_handle));
             }while (cursor.moveToNext());
         }
+        cursor.close();
+        return entities;
+    }
+    public List<TemperatureDataEntity> getDatas(String[] columns, String selection,
+                                                String[] selectionArgs, String groupBy, String having,
+                                                String orderBy, String limit){
+        Cursor cursor = mSqLiteDatabase.query("TEMPERATUREDATA",columns,selection,selectionArgs,groupBy,having,orderBy,limit);
+        List<TemperatureDataEntity> entities = new ArrayList<>();
+        if (cursor.moveToFirst()){
+            do {
+                int room_id = cursor.getInt(cursor.getColumnIndex("room_id"));
+                long time = cursor.getLong(cursor.getColumnIndex("time"));
+                double real_temper = cursor.getDouble(cursor.getColumnIndex("real_temper"));
+                double warn_temper = cursor.getDouble(cursor.getColumnIndex("warn_temper"));
+                int is_danger = cursor.getInt(cursor.getColumnIndex("is_danger"));
+                int is_handle = cursor.getInt(cursor.getColumnIndex("is_handle"));
+                entities.add(new TemperatureDataEntity(room_id,time,real_temper,warn_temper,is_danger,is_handle));
+            }while (cursor.moveToNext());
+        }
+        cursor.close();
         return entities;
     }
 }

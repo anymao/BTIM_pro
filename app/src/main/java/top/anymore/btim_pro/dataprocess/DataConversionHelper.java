@@ -1,10 +1,15 @@
 package top.anymore.btim_pro.dataprocess;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
+
 /**
  * Created by anymore on 17-3-30.
  */
 
 public class DataConversionHelper {
+    //时间格式转换类
+    private static SimpleDateFormat format = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss");
     /**
      * 数据转换，其中s是一个字符串，以空格分割例如
      * “1 2 3 12 12 52 25.2”
@@ -13,11 +18,16 @@ public class DataConversionHelper {
      * @return
      */
     public static double[] Strings2doubles(String s){
+        s = s.trim();
         String[] temp = s.split(" ");
         double[] result = new double[temp.length];
         for (int i = 0; i < temp.length; i++) {
-            result[i] = Integer.parseInt(temp[i]);
+            result[i] = Double.parseDouble(temp[i]);
         }
         return result;
+    }
+    public static String long2Date(long time){
+       return format.format(new Date(time));
+
     }
 }

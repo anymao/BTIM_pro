@@ -39,7 +39,9 @@
         <service
             android:name=".service.TemperatureDataService"
             android:enabled="true"
-            android:exported="true"></service>
+            android:exported="true" />
+
+        <activity android:name=".activity.RoomDetailActivity"></activity>
     </application>
 
 </manifest>

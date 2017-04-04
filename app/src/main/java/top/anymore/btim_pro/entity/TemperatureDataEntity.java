@@ -72,4 +72,16 @@ public class TemperatureDataEntity {
     public void setIs_dager(int is_dager) {
         this.is_dager = is_dager;
     }
+
+    @Override
+    public String toString() {
+        return "TemperatureDataEntity{" +
+                "room_id=" + room_id +
+                ", time=" + time +
+                ", real_temper=" + real_temper +
+                ", warn_temper=" + warn_temper +
+                ", is_dager=" + is_dager +
+                ", is_handle=" + is_handle +
+                '}';
+    }
 }

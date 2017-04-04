@@ -9,15 +9,20 @@ import android.database.sqlite.SQLiteOpenHelper;
  */
 
 public class TemperatureSQLiteHelper extends SQLiteOpenHelper{
-
+    public static final String ROOM_ID = "room_id";
+    public static final String TIME = "time";
+    public static final String REAL_TEMPER = "real_temper";
+    public static final String WARN_TEMPER = "warn_temper";
+    public static final String IS_DANGER = "is_danger";
+    public static final String IS_HANDLE = "is_handle";
     private static final String CREATE_TABLE_TEMP = "create table TEMPERATUREDATA(" +
             "id integer primary key autoincrement," +
             "room_id integer," +
             "time integer," +
             "real_temper real," +
             "warn_temper real," +
-            "isdanger integer," +
-            "ishandle integer)";
+            "is_danger integer," +
+            "is_handle integer)";
     private static final String tag = "TemperatureSQLiteHelper";
     public TemperatureSQLiteHelper(Context context, String name, SQLiteDatabase.CursorFactory factory, int version) {
         super(context, name, factory, version);

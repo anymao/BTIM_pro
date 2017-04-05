@@ -100,4 +100,7 @@ public class TemperatureDataProcessUtil {
         cursor.close();
         return entities;
     }
+    public int updateData(ContentValues values, String whereClause, String[] whereArgs){
+        return mSqLiteDatabase.update("TEMPERATUREDATA",values,whereClause,whereArgs);
+    }
 }

@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:gravity="center"
+    tools:context="top.anymore.btim_pro.activity.AboutActivity">
+    <ImageView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:src="@mipmap/head_icon"
+        android:layout_marginTop="40dp"/>
+    <Button
+        android:id="@+id/btn_weibo"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/holo_mina"
+        android:background="@color/transparent"
+        android:layout_marginTop="20dp"
+        android:textColor="@color/purple"/>
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="0dp"
+        android:layout_weight="1"
+        android:text="蓝牙检测工具 V1.0"
+        android:gravity="bottom"
+        android:paddingBottom="40dp"/>
+
+
+</LinearLayout>

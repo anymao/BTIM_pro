@@ -15,7 +15,7 @@
         android:theme="@style/AppTheme">
         <activity
             android:name=".activity.MainActivity"
-            android:label="自定义">
+            android:label="总览">
             <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
 
@@ -41,7 +41,8 @@
             android:enabled="true"
             android:exported="true" />
 
-        <activity android:name=".activity.RoomDetailActivity"></activity>
+        <activity android:name=".activity.RoomDetailActivity" />
+        <activity android:name=".activity.AboutActivity"></activity>
     </application>
 
 </manifest>

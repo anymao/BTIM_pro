@@ -4,7 +4,19 @@
     android:layout_height="match_parent">
     <TextView
         android:layout_width="match_parent"
-        android:layout_height="match_parent"
-        android:text="右边菜单"
-        android:layout_gravity="center"/>
+        android:layout_height="wrap_content"
+        android:text="请设置警戒温度："/>
+    <android.support.v7.widget.RecyclerView
+        android:id="@+id/rv_warn_tempers"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        android:layout_weight="1"></android.support.v7.widget.RecyclerView>
+    <Button
+        android:id="@+id/btn_about"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="about"
+        android:gravity="center"
+        android:background="@color/transparent"
+        />
 </LinearLayout>

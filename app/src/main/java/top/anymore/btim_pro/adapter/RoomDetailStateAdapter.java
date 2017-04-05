@@ -1,8 +1,13 @@
 package top.anymore.btim_pro.adapter;
 
+import android.content.ContentValues;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.graphics.Color;
 import android.os.AsyncTask;
+import android.os.Handler;
+import android.os.Message;
+import android.support.v7.app.AlertDialog;
 import android.support.v7.widget.RecyclerView;
 import android.text.SpannableString;
 import android.view.LayoutInflater;
@@ -11,6 +16,7 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.ProgressBar;
 import android.widget.TextView;
+import android.widget.Toast;
 
 import java.util.List;
 
@@ -31,12 +37,40 @@ public class RoomDetailStateAdapter extends RecyclerView.Adapter<RoomDetailState
     private static final int TYPE_NORMAL = 0;
     private static final int TYPE_FOOTER = 1;
     private static final int TYPE_HEADER = 2;
+    private static final int ACTION_REFRESH = 89;
     private View footer,header;
     private Button mbtnLoadMore;
     private ProgressBar mpbLoadMore;
-    public RoomDetailStateAdapter(List<TemperatureDataEntity> dataEntities, TemperatureDataProcessUtil temperatureDataProcessUtil) {
+    private AlertDialog.Builder mDialog;
+    private Context mContext;
+    private Handler mHandler = new Handler(){
+        @Override
+        public void handleMessage(Message msg) {
+            switch (msg.what){
+                case ACTION_REFRESH:
+//                    int postion = msg.arg1;
+                    LogUtil.v(tag,"genggai postion");
+                    dataEntities.add(msg.arg1-1, (TemperatureDataEntity) msg.obj);
+                    notifyItemChanged(msg.arg1);
+                    break;
+            }
+        }
+    };
+    public RoomDetailStateAdapter(Context context,List<TemperatureDataEntity> dataEntities, TemperatureDataProcessUtil temperatureDataProcessUtil) {
+        mContext = context;
         this.dataEntities = dataEntities;
         mTemperatureDataProcessUtil = temperatureDataProcessUtil;
+        mDialog = new AlertDialog.Builder(mContext);
+        mDialog.setTitle("title");
+        mDialog.setCancelable(true);
+        mDialog.setMessage("are you sure safe?");
+        mDialog.setNegativeButton("no", new DialogInterface.OnClickListener() {
+            @Override
+            public void onClick(DialogInterface dialog, int which) {
+                LogUtil.v(tag,"diag no");
+                dialog.dismiss();
+            }
+        });
     }
 
     public View getFooter() {
@@ -76,7 +110,7 @@ public class RoomDetailStateAdapter extends RecyclerView.Adapter<RoomDetailState
     }
 
     @Override
-    public void onBindViewHolder(ViewHolder holder, int position) {
+    public void onBindViewHolder(ViewHolder holder, final int position) {
         if (getItemViewType(position) == TYPE_HEADER){
             return;
         }else if (getItemViewType(position) == TYPE_FOOTER){
@@ -96,18 +130,65 @@ public class RoomDetailStateAdapter extends RecyclerView.Adapter<RoomDetailState
                 }
             });
         }else {
-            TemperatureDataEntity entity = dataEntities.get(position-1);
+            final TemperatureDataEntity entity = dataEntities.get(position-1);
             holder.tvDataId.setText(""+position);
             holder.tvDataTime.setText(DataConversionHelper.long2Date(entity.getTime()));
             holder.tvDataTemper.setText(entity.getReal_temper()+"℃");
             if (entity.getIs_dager() == TemperatureDataEntity.STATE_DANGER && entity.getIs_handle() == TemperatureDataEntity.STATE_NOT_HANDLE){
+                final int room_id = entity.getRoom_id();
+                final long time = entity.getTime();
+                final double real_temper = entity.getReal_temper();
                 holder.btnState.setText("状态异常");
                 holder.btnState.setTextColor(Color.RED);
                 holder.btnState.setEnabled(true);
                 holder.btnState.setOnClickListener(new View.OnClickListener() {
                     @Override
                     public void onClick(View v) {
-                        //修改数据的状态
+//                        Toast.makeText(mContext,"position"+position,Toast.LENGTH_SHORT).show();
+//                        //test
+//                        new Thread(new Runnable() {
+//                            @Override
+//                            public void run() {
+//                                LogUtil.v(tag,"vvvvvvvvvvvvvvvvv");
+//                                ContentValues values = new ContentValues();
+//                                values.put("is_handle",TemperatureDataEntity.STATE_HANDLE);
+//                                mTemperatureDataProcessUtil.updateData(values,"room_id = ? AND time = ? AND real_temper = ?",new String[]{""+room_id,""+time,""+real_temper});
+//                                TemperatureDataEntity temp = entity;
+//                                temp.setIs_handle(TemperatureDataEntity.STATE_HANDLE);
+//                                Message message = Message.obtain();
+//                                message.what = ACTION_REFRESH;
+//                                message.arg1 = position;
+//                                message.obj = temp;
+//                                mHandler.sendMessage(message);
+////                                        Toast.makeText(mContext,"change",Toast.LENGTH_SHORT).show();
+//                            }
+//                        }).start();
+//                        //修改数据的状态
+                        mDialog.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                            @Override
+                            public void onClick(DialogInterface dialog, int which) {
+                                LogUtil.v(tag,"diag yes");
+                                new Thread(new Runnable() {
+                                    @Override
+                                    public void run() {
+                                        ContentValues values = new ContentValues();
+                                        values.put("is_handle",TemperatureDataEntity.STATE_HANDLE);
+                                        mTemperatureDataProcessUtil.updateData(values,"room_id = ? AND time = ? AND real_temper = ?",new String[]{""+room_id,""+time,""+real_temper});
+                                        TemperatureDataEntity temp = entity;
+                                        temp.setIs_handle(TemperatureDataEntity.STATE_HANDLE);
+                                        Message message = Message.obtain();
+                                        message.what = ACTION_REFRESH;
+                                        message.arg1 = position;
+                                        message.obj = temp;
+                                        mHandler.sendMessage(message);
+//                                        Toast.makeText(mContext,"change",Toast.LENGTH_SHORT).show();
+                                    }
+                                }).start();
+//                                notifyItemChanged(position);
+//                                notifyDataSetChanged();
+                            }
+                        });
+                        mDialog.show();
                     }
                 });
             }else if (entity.getIs_dager() == TemperatureDataEntity.STATE_DANGER && entity.getIs_handle() == TemperatureDataEntity.STATE_HANDLE){

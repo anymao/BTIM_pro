@@ -1,8 +1,17 @@
 package top.anymore.btim_pro.activity;
 
+import android.app.Notification;
+import android.app.NotificationManager;
+import android.app.PendingIntent;
+import android.content.BroadcastReceiver;
+import android.content.Context;
+import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.res.Configuration;
+import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
+import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -20,6 +29,7 @@ import top.anymore.btim_pro.fragment.ContentFragment;
 import top.anymore.btim_pro.fragment.LeftMenuFragment;
 import top.anymore.btim_pro.fragment.RightMenuFragment;
 import top.anymore.btim_pro.logutil.LogUtil;
+import top.anymore.btim_pro.service.DataProcessService;
 
 public class MainActivity extends AppCompatActivity {
     private static final String tag = "MainActivity";
@@ -38,10 +48,20 @@ public class MainActivity extends AppCompatActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        //取消后台消息
+//        unregisterReceiver(dangerMessageReceiver);
         initViews();
+        initeceiver();
         //test
         ExtraDataStorage.isUIAlive = true;
     }
+
+    private void initeceiver() {
+        IntentFilter filter = new IntentFilter(DataProcessService.ACTION_TEMPER_OVER_WARN_TEMPER);
+        filter.setPriority(100);
+        registerReceiver(receiver,filter);
+    }
+
     //加载标题栏的功能按钮，在这里主要是右边的设置按钮
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -193,6 +213,9 @@ public class MainActivity extends AppCompatActivity {
         }
         ExtraDataStorage.isUIAlive = false;
         ExtraDataStorage.isConnected = false;
+        //后台通知系列
+        IntentFilter filter = new IntentFilter(DataProcessService.ACTION_TEMPER_OVER_WARN_TEMPER);
+        unregisterReceiver(receiver);
     }
 
     /**
@@ -232,4 +255,13 @@ public class MainActivity extends AppCompatActivity {
         }
 //        super.onBackPressed();
     }
+    private BroadcastReceiver receiver = new BroadcastReceiver() {
+        @Override
+        public void onReceive(Context context, Intent intent) {
+            String action = intent.getAction();
+            if (action.equals(DataProcessService.ACTION_TEMPER_OVER_WARN_TEMPER)){
+                abortBroadcast();
+            }
+        }
+    };
 }

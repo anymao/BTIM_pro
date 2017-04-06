@@ -1,13 +1,14 @@
 package top.anymore.btim_pro.entity;
 
 
+import java.io.Serializable;
 import java.util.Date;
 
 /**
  * Created by anymore on 17-3-26.
  */
 
-public class Message {
+public class Message implements Serializable{
     public static final int MESSAGE_TYPE_GET = 0;
     public static final int MESSAGE_TYPE_SEND = 1;
     private Date mTime;

@@ -1,5 +1,6 @@
 package top.anymore.btim_pro.fragment;
 
+import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
 import android.content.Context;
@@ -40,6 +41,7 @@ import top.anymore.btim_pro.adapter.RoomsStateAdapter;
 import top.anymore.btim_pro.bluetooth.BluetoothConnectThread;
 import top.anymore.btim_pro.bluetooth.BluetoothServerThread;
 import top.anymore.btim_pro.bluetooth.CommunicationThreadManager;
+import top.anymore.btim_pro.dataprocess.DataConversionHelper;
 import top.anymore.btim_pro.dataprocess.sqlite.DataProcessUtil;
 import top.anymore.btim_pro.dataprocess.sqlite.TemperatureDataProcessUtil;
 import top.anymore.btim_pro.entity.TemperatureDataEntity;
@@ -106,7 +108,7 @@ public class ContentFragment extends Fragment{
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
         View contentLayout = inflater.inflate(R.layout.content_layout,container,false);
         tv_linkstate = (TextView) contentLayout.findViewById(R.id.tv_linkstate);
-//        tv_record = (TextView) contentLayout.findViewById(R.id.tv_record);
+        tv_record = (TextView) contentLayout.findViewById(R.id.tv_record);
         rvRoomsState = (RecyclerView) contentLayout.findViewById(R.id.rv_rooms_state);
         et_msg = (EditText) contentLayout.findViewById(R.id.et_msg);
         btn_send = (Button) contentLayout.findViewById(R.id.btn_send);
@@ -125,6 +127,7 @@ public class ContentFragment extends Fragment{
         rvRoomsState.setAdapter(mRoomsStateAdapter);
         //异步加载历史记录
 //        new LoadRecordsTask().execute();
+        new LoadRecordCommandTask().execute();
         new LoadNewDataTask().execute();
         //重新绑定服务
         if (ExtraDataStorage.isServiceStarted ){
@@ -142,6 +145,7 @@ public class ContentFragment extends Fragment{
 //        filter.setPriority(50);//低优先级的广播接收器，保证了先实现服务启动，再收到这个广播
         filter.addAction(AdvancedFunctionActivity.ACTION_BLUETOOTH_CONNECT);
         filter.addAction(DataProcessService.ACTION_DATA_STORAGED);
+        filter.addAction(DataProcessService.ACTION_MESSAGE_SEND);
         getActivity().registerReceiver(receiver,filter);
     }
     public BroadcastReceiver receiver = new BroadcastReceiver() {
@@ -170,6 +174,16 @@ public class ContentFragment extends Fragment{
             if (action.equals(DataProcessService.ACTION_DATA_STORAGED)){
 //                Toast.makeText(getContext(),"数据存储完毕",Toast.LENGTH_SHORT).show();
                 new LoadNewDataTask().execute();
+            }
+            if (action.equals(DataProcessService.EXTRA_MESSAGE_SEND)){
+                top.anymore.btim_pro.entity.Message msg = (top.anymore.btim_pro.entity.Message)
+                        intent.getSerializableExtra(DataProcessService.EXTRA_MESSAGE_SEND);
+                tv_record.append(msg.getDate().toString()+"\n"+msg.getContent()+"\n");
+                et_msg.setText("");
+            }
+            if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)){
+                LogUtil.v(tag,"收到广播:蓝牙连接断开");
+
             }
         }
     };
@@ -247,6 +261,24 @@ public class ContentFragment extends Fragment{
             }
 //            roomStateList = spannableStrings;
             return spannableStrings;
+        }
+    }
+    private class LoadRecordCommandTask extends AsyncTask<Void,Void,String>{
+        @Override
+        protected void onPostExecute(String s) {
+            super.onPostExecute(s);
+            tv_record.append(s);
+        }
+
+        @Override
+        protected String doInBackground(Void... params) {
+            DataProcessUtil dataProcessUtil = new DataProcessUtil(getContext(),ExtraDataStorage.currentDeviceAddress+"_message.db");
+            List<top.anymore.btim_pro.entity.Message> messages = dataProcessUtil.getAllMessage();
+            StringBuilder sb = new StringBuilder();
+            for (top.anymore.btim_pro.entity.Message m :messages) {
+                sb.append(m.getDate()+"\n"+m.getContent()+"\n");
+            }
+            return sb.toString();
         }
     }
 }

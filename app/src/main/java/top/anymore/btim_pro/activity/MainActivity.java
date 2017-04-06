@@ -130,6 +130,7 @@ public class MainActivity extends AppCompatActivity {
         leftMenuLayout = (FrameLayout) findViewById(R.id.left_menu_layout);
         rightMenuLayout = (FrameLayout) findViewById(R.id.right_menu_layout);
         contentLayout = (FrameLayout) findViewById(R.id.content_layout);
+        setTitle("总览");
         mTitle = (String) getTitle();
         mActionBar = getSupportActionBar();
         mLeftMenuFragment = new LeftMenuFragment();

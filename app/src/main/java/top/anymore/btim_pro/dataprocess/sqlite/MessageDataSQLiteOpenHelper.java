@@ -12,7 +12,7 @@ import top.anymore.btim_pro.logutil.LogUtil;
 
 public class MessageDataSQLiteOpenHelper extends SQLiteOpenHelper{
     private static final String tag = "MessageDataSQLiteOpenHelper";
-    public static final String CREATE_MESSAGE = "create table Message (" +
+    public static final String CREATE_MESSAGE = "create table Message(" +
             "id integer primary key autoincrement" +
             ", msg_content text" +
             ", msg_time integer" +//时间用于存储毫秒数

@@ -64,7 +64,7 @@ public class RoomDetailActivity extends AppCompatActivity {
     private void init() {
         srlRefreshLayout = (SwipeRefreshLayout) findViewById(R.id.srl_fresh_layout);
         rvRoomDetail = (RecyclerView) findViewById(R.id.rv_room_detail);
-        getSupportActionBar().setTitle("Room "+roomId+" gaishu");
+        getSupportActionBar().setTitle("Room "+roomId+" 历史概况");
 //        View footer = LayoutInflater.from(this).inflate(R.layout.item_load_more,null,false);
 //        View header = LayoutInflater.from(this).inflate(R.layout.item_room_detail_header,null,false);
         dataEntities = new ArrayList<>();
@@ -115,7 +115,7 @@ public class RoomDetailActivity extends AppCompatActivity {
                 LogUtil.v(tag,"下拉刷新完毕");
                 return null;
             }
-            long lastTime = dataEntities.get(dataEntities.size()-1).getTime();
+            long lastTime = dataEntities.get(0).getTime();
             entities = mTemperatureDataProcessUtil.getDatas(null,"room_id = ? AND time > ?",new String[]{""+roomId,""+lastTime},null,null,"time ASC",null);
             for (TemperatureDataEntity e : entities) {
                 dataEntities.add(0,e);

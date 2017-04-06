@@ -1,5 +1,5 @@
 <resources>
-    <string name="app_name">BTIM_pro</string>
+    <string name="app_name">蓝牙调试工具</string>
     <string name="open">打开</string>
     <string name="close">关闭</string>
     <string name="loadmore">点击加载更多数据</string>

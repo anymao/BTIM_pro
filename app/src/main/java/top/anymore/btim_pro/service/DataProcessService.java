@@ -35,6 +35,8 @@ public class DataProcessService extends Service {
     public static final String ACTION_DATA_STORAGED = "top.anymore.btim_pro.action_data_storaged";
     public static final String ACTION_TEMPER_OVER_WARN_TEMPER = "top.anymore.btim_pro.action_temper_over_warn_temper";
     public static final String EXTRA_MESSAGE = "top.anymore.btim_pro.extra_message";
+    public static final String ACTION_MESSAGE_SEND = "top.anymore.btim_pro.action_message_send";
+    public static final String EXTRA_MESSAGE_SEND = "top.anymore.btim_pro.extra_message_send";
     private static final String tag = "DataProcessService";
     private CommunicationThread mCommunicationThread;
     private DataProcessUtil mDataProcessUtil;
@@ -86,7 +88,21 @@ public class DataProcessService extends Service {
                             sendBroadcast(intent);
                         }
                     }).start();
-
+                    break;
+                case CommunicationThread.ACTION_MSG_SENG:
+                    new Thread(new Runnable() {
+                        @Override
+                        public void run() {
+                            LogUtil.v(tag,"msg_content:"+msg_content);
+                            Date msg_time = new Date(System.currentTimeMillis());
+                            int msg_type = Message.MESSAGE_TYPE_SEND;
+                            Message message = new Message(msg_time,msg_content,msg_type);
+                            mDataProcessUtil.addData(message);
+                            Intent intent = new Intent(ACTION_MESSAGE_SEND);
+                            intent.putExtra(EXTRA_MESSAGE_SEND,message);
+                            sendBroadcast(intent);
+                        }
+                    }).start();
                     break;
             }
 
@@ -139,7 +155,7 @@ public class DataProcessService extends Service {
     @Override
     public void onCreate() {
         super.onCreate();
-//        mDataProcessUtil = new DataProcessUtil(getApplicationContext(),"message.db");
+        mDataProcessUtil = new DataProcessUtil(getApplicationContext(),ExtraDataStorage.currentDeviceAddress+"_message.db");
         mTemperatureDataProcessUtil = new TemperatureDataProcessUtil(getApplicationContext(),ExtraDataStorage.currentDeviceAddress+"_temperdata.db");
         UIHandler = new Handler(){
             @Override
@@ -197,6 +213,8 @@ public class DataProcessService extends Service {
                                 R.mipmap.ic_launcher))
                         .setContentIntent(pi)
                         .setAutoCancel(true)
+                        .setPriority(NotificationCompat.PRIORITY_MAX)
+                        .setDefaults(NotificationCompat.DEFAULT_ALL)
                         .build();
                 manager.notify(1,notification);
             }

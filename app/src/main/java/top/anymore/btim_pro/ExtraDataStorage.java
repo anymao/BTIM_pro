@@ -11,6 +11,6 @@ public class ExtraDataStorage {
     public static boolean isServiceBind = false;
     public static boolean isServiceStarted = false;
     public static boolean isConnected = false;
-    public static String currentDeviceAddress = "";
+    public static String currentDeviceAddress = "ANYMORE";
     public static final int ROOM_NUM = 8;
 }

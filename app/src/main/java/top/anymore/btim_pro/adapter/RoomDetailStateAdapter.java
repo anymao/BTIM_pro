@@ -50,6 +50,7 @@ public class RoomDetailStateAdapter extends RecyclerView.Adapter<RoomDetailState
                 case ACTION_REFRESH:
 //                    int postion = msg.arg1;
                     LogUtil.v(tag,"genggai postion");
+                    dataEntities.remove(msg.arg1-1);
                     dataEntities.add(msg.arg1-1, (TemperatureDataEntity) msg.obj);
                     notifyItemChanged(msg.arg1);
                     break;
@@ -61,10 +62,10 @@ public class RoomDetailStateAdapter extends RecyclerView.Adapter<RoomDetailState
         this.dataEntities = dataEntities;
         mTemperatureDataProcessUtil = temperatureDataProcessUtil;
         mDialog = new AlertDialog.Builder(mContext);
-        mDialog.setTitle("title");
+        mDialog.setTitle("提示");
         mDialog.setCancelable(true);
-        mDialog.setMessage("are you sure safe?");
-        mDialog.setNegativeButton("no", new DialogInterface.OnClickListener() {
+        mDialog.setMessage("您是否确定这条数据对应的温度为安全状态？");
+        mDialog.setNegativeButton("不,稍后去查看", new DialogInterface.OnClickListener() {
             @Override
             public void onClick(DialogInterface dialog, int which) {
                 LogUtil.v(tag,"diag no");
@@ -164,7 +165,7 @@ public class RoomDetailStateAdapter extends RecyclerView.Adapter<RoomDetailState
 //                            }
 //                        }).start();
 //                        //修改数据的状态
-                        mDialog.setPositiveButton("yes", new DialogInterface.OnClickListener() {
+                        mDialog.setPositiveButton("是的,我已确认", new DialogInterface.OnClickListener() {
                             @Override
                             public void onClick(DialogInterface dialog, int which) {
                                 LogUtil.v(tag,"diag yes");

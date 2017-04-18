@@ -3,6 +3,7 @@ package top.anymore.btim_pro.logutil;
 import android.util.Log;
 
 /**
+ * 日志工具类，在release版本关闭输出日志
  * Created by anymore on 17-3-23.
  */
 

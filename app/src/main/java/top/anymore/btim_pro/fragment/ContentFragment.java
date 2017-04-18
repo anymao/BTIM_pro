@@ -1,5 +1,6 @@
 package top.anymore.btim_pro.fragment;
 
+import android.bluetooth.BluetoothAdapter;
 import android.bluetooth.BluetoothDevice;
 import android.content.BroadcastReceiver;
 import android.content.ComponentName;
@@ -7,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -50,14 +52,15 @@ import top.anymore.btim_pro.service.DataProcessService;
 import top.anymore.btim_pro.service.TemperatureDataService;
 
 /**
+ * 抽屉视图中，中间视图碎片
  * Created by anymore on 17-3-23.
  */
 
 public class ContentFragment extends Fragment{
     private static final String tag = "ContentFragment";
-    private TextView tv_linkstate,tv_record;
-    private EditText et_msg;
-    private Button btn_send;
+    private TextView tv_linkstate,tv_record;//显示连接状态和发送消息记录
+    private EditText et_msg;//消息输入框
+    private Button btn_send;//发送按钮
     private TemperatureDataProcessUtil mTemperatureDataProcessUtil;
     private DataProcessService.CommunicationBinder mCommunicationBinder;
     private List<SpannableString> roomStateList;//
@@ -106,6 +109,7 @@ public class ContentFragment extends Fragment{
     @Nullable
     @Override
     public View onCreateView(LayoutInflater inflater, @Nullable ViewGroup container, @Nullable Bundle savedInstanceState) {
+        //初始化
         View contentLayout = inflater.inflate(R.layout.content_layout,container,false);
         tv_linkstate = (TextView) contentLayout.findViewById(R.id.tv_linkstate);
         tv_record = (TextView) contentLayout.findViewById(R.id.tv_record);
@@ -119,6 +123,13 @@ public class ContentFragment extends Fragment{
     public void onStart() {
         super.onStart();
         init();
+        //获取连接状态
+        boolean connectstate = getBluetoothConnectState();
+        if (connectstate){
+            tv_linkstate.setText("已连接.");
+        }else {
+            tv_linkstate.setText("未连接.");
+        }
         mTemperatureDataProcessUtil = new TemperatureDataProcessUtil(getContext(),ExtraDataStorage.currentDeviceAddress+"_temperdata.db");
         roomStateList = new ArrayList<>();
         mRoomsStateAdapter = new RoomsStateAdapter(roomStateList,getContext());
@@ -141,17 +152,29 @@ public class ContentFragment extends Fragment{
         btn_send.setOnClickListener(listener);
         //注册广播接收器
         IntentFilter filter = new IntentFilter();
+        filter.addAction(BluetoothAdapter.ACTION_STATE_CHANGED);
         filter.addAction(LeftMenuFragment.ACTION_BLUETOOTH_CONNECT);
 //        filter.setPriority(50);//低优先级的广播接收器，保证了先实现服务启动，再收到这个广播
         filter.addAction(AdvancedFunctionActivity.ACTION_BLUETOOTH_CONNECT);
         filter.addAction(DataProcessService.ACTION_DATA_STORAGED);
         filter.addAction(DataProcessService.ACTION_MESSAGE_SEND);
+        filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
+        filter.addAction(BluetoothDevice.ACTION_ACL_DISCONNECTED);
         getActivity().registerReceiver(receiver,filter);
     }
     public BroadcastReceiver receiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
+            //蓝牙状态改变
+            if (action.equals(BluetoothAdapter.ACTION_STATE_CHANGED)){
+                int state = intent.getExtras().getInt(BluetoothAdapter.EXTRA_STATE);
+                if (state == BluetoothAdapter.STATE_OFF){
+                    setBluetoothConnectState(false);
+                    tv_linkstate.setText("未连接.");
+                }
+            }
+            //蓝牙连接，特指建立通信进程（客户端）
             if (action.equals(LeftMenuFragment.ACTION_BLUETOOTH_CONNECT)){
                 LogUtil.v(tag,"contentFragment get ");
                 tv_linkstate.setText("连接状态：已连接");
@@ -163,6 +186,7 @@ public class ContentFragment extends Fragment{
                 ExtraDataStorage.isServiceBind = true;
                 ExtraDataStorage.isConnected = true;
             }
+            //蓝牙连接特指建立通信进程（服务端）
             if (action.equals(AdvancedFunctionActivity.ACTION_BLUETOOTH_CONNECT)){
                 tv_linkstate.setText("连接状态：已连接");
                 Intent bindIntent = new Intent(getContext(),DataProcessService.class);
@@ -171,19 +195,35 @@ public class ContentFragment extends Fragment{
                 ExtraDataStorage.isConnected = true;
 //                mCommunicationBinder.setUIHandler(mHandler);
             }
+            //数据存储动作，收到此动作应该更新UI
             if (action.equals(DataProcessService.ACTION_DATA_STORAGED)){
 //                Toast.makeText(getContext(),"数据存储完毕",Toast.LENGTH_SHORT).show();
                 new LoadNewDataTask().execute();
             }
+            //发送消息动作
             if (action.equals(DataProcessService.EXTRA_MESSAGE_SEND)){
                 top.anymore.btim_pro.entity.Message msg = (top.anymore.btim_pro.entity.Message)
                         intent.getSerializableExtra(DataProcessService.EXTRA_MESSAGE_SEND);
                 tv_record.append(msg.getDate().toString()+"\n"+msg.getContent()+"\n");
                 et_msg.setText("");
             }
+            //蓝牙断开连接动作，应该更新界面
             if (action.equals(BluetoothDevice.ACTION_ACL_DISCONNECTED)){
                 LogUtil.v(tag,"收到广播:蓝牙连接断开");
-
+                setBluetoothConnectState(false);
+                tv_linkstate.setText("未连接.");
+            }
+            //系统api中的监听连接
+            if (action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)){
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE,BluetoothAdapter.ERROR);
+                if (state == BluetoothAdapter.STATE_CONNECTED){
+                    LogUtil.v(tag,"来自系统API 蓝牙设备连接");
+                }
+                if (state == BluetoothAdapter.STATE_DISCONNECTED){
+                    LogUtil.v(tag,"来自系统Api 蓝牙设备断开连接");
+                    setBluetoothConnectState(false);
+                    tv_linkstate.setText("未连接.");
+                }
             }
         }
     };
@@ -212,6 +252,7 @@ public class ContentFragment extends Fragment{
 //            tv_record.setText(s);
 //        }
 //    }
+    //异步加载新的消息记录
     private class LoadNewDataTask extends AsyncTask<Void,Void,List<SpannableString>>{
         @Override
         protected void onPostExecute(List<SpannableString> spannableStrings) {
@@ -238,7 +279,7 @@ public class ContentFragment extends Fragment{
 //                //test end
                 ssb.append("房间号："+i+"\n");
                 for (TemperatureDataEntity entity:entities) {
-                    ssb.append("时间："+format.format(new Date(entity.getTime()))+"        温度："+entity.getReal_temper()+"℃   状态：  ");
+                    ssb.append(format.format(new Date(entity.getTime()))+"  温度："+entity.getReal_temper()+"℃ 状态： ");
                     if (entity.getIs_dager()==TemperatureDataEntity.STATE_DANGER && entity.getIs_handle() == TemperatureDataEntity.STATE_NOT_HANDLE){
                         SpannableString ss = new SpannableString("异常\n");
                         ForegroundColorSpan span = new ForegroundColorSpan(Color.RED);
@@ -269,7 +310,7 @@ public class ContentFragment extends Fragment{
             super.onPostExecute(s);
             tv_record.append(s);
         }
-
+        //主线程更新界面
         @Override
         protected String doInBackground(Void... params) {
             DataProcessUtil dataProcessUtil = new DataProcessUtil(getContext(),ExtraDataStorage.currentDeviceAddress+"_message.db");
@@ -280,5 +321,25 @@ public class ContentFragment extends Fragment{
             }
             return sb.toString();
         }
+    }
+
+    /**
+     * 修改蓝牙连接状态
+     * @param state
+     */
+    private void setBluetoothConnectState(boolean state){
+        SharedPreferences.Editor editor = getContext()
+                .getSharedPreferences("connectstate",Context.MODE_PRIVATE).edit();
+        editor.putBoolean(LeftMenuFragment.BLUETOOTH_CONNECT_STATE,state);
+        editor.apply();
+    }
+
+    /**
+     * 获取蓝牙连接状态
+     * @return
+     */
+    private boolean getBluetoothConnectState(){
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("connectstate",Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(LeftMenuFragment.BLUETOOTH_CONNECT_STATE,false);
     }
 }

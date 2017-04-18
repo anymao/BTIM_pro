@@ -15,7 +15,8 @@
         android:id="@+id/btn_about"
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
-        android:text="about"
+        android:textAllCaps="false"
+        android:text="About"
         android:gravity="center"
         android:background="@color/transparent"
         />

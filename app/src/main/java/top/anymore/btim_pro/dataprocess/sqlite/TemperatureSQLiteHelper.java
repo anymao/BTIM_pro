@@ -5,6 +5,7 @@ import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 
 /**
+ * 温度数据数据库Openhelper
  * Created by anymore on 17-4-1.
  */
 

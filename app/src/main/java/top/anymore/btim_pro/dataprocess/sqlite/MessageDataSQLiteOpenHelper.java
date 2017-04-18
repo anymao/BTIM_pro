@@ -6,7 +6,7 @@ import android.database.sqlite.SQLiteOpenHelper;
 
 import top.anymore.btim_pro.logutil.LogUtil;
 
-/**
+/**主要用于存储发送的消息
  * Created by anymore on 17-3-26.
  */
 

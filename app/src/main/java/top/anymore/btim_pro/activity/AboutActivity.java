@@ -10,7 +10,7 @@ import android.widget.Button;
 import top.anymore.btim_pro.R;
 
 public class AboutActivity extends AppCompatActivity {
-    private Button btnWeibo;
+    private Button btnWeibo;//点击按钮跳转到指定页面
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);

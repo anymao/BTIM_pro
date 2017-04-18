@@ -1,6 +1,7 @@
 package top.anymore.btim_pro.entity;
 
 /**
+ * 房间温度数据实体类包括房间号，时间，实际温度，警戒温度，是否超过警戒温度,是否处理等字段
  * Created by anymore on 17-4-1.
  */
 

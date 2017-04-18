@@ -20,7 +20,7 @@ import top.anymore.btim_pro.activity.AboutActivity;
 import top.anymore.btim_pro.adapter.RoomWarnTemperAdapter;
 import top.anymore.btim_pro.dataprocess.WarnTemperature;
 
-/**
+/**抽屉布局的右布局碎片，主要用来设置警戒温度
  * Created by anymore on 17-3-23.
  */
 

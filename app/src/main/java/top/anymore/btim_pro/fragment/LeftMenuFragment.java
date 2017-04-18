@@ -7,6 +7,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.graphics.drawable.AnimationDrawable;
 import android.graphics.drawable.Drawable;
 import android.os.Bundle;
@@ -38,6 +39,7 @@ import top.anymore.btim_pro.service.DataProcessService;
 import top.anymore.btim_pro.service.TemperatureDataService;
 
 /**
+ * 抽屉布局的左布局碎片
  * Created by anymore on 17-3-23.
  */
 
@@ -52,9 +54,11 @@ public class LeftMenuFragment extends Fragment {
     private BluetoothDeviceAdapter mPairedDeviceAdapter,mAvailableDeviceAdapter;
     private BluetoothConnectThread mBluetoothConnectThread;
     public static final String ACTION_BLUETOOTH_CONNECT = "top.anymore.btim_pro.fragment.leftmenufragment.action_bluetooth_connect";
+    public static final String BLUETOOTH_CONNECT_STATE = "state";
     @Override
     public void onCreate(@Nullable Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        //初始化一些成员变量
         mBluetoothUtil = BluetoothUtil.getInstance();
         mPairedDeviceList = new ArrayList<>();
         mAvailableDeviceList = new ArrayList<>();
@@ -151,6 +155,10 @@ public class LeftMenuFragment extends Fragment {
         filter.addAction(BluetoothDevice.ACTION_FOUND);
         //注册广播
         filter.addAction(BluetoothConnectThread.ACTION_BLUETOOTH_CONNECT);
+        //绑定状态
+        filter.addAction(BluetoothDevice.ACTION_BOND_STATE_CHANGED);
+        //监听连接断开
+        filter.addAction(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED);
 //        filter.setPriority(100);
         getActivity().registerReceiver(receiver,filter);
     }
@@ -173,6 +181,7 @@ public class LeftMenuFragment extends Fragment {
                         getActivity().stopService(new Intent(getContext(),DataProcessService.class));
                         ExtraDataStorage.isServiceStarted = false;
                     }
+                    setBluetoothConnectState(false);
                     getActivity().finish();
                     break;
             }
@@ -194,6 +203,7 @@ public class LeftMenuFragment extends Fragment {
                 if (state == BluetoothAdapter.STATE_OFF){
                    scOpenBluetooth.setChecked(false);
                    setFunctionClickable(false);
+                   setBluetoothConnectState(false);
                 }
 
             }
@@ -221,9 +231,23 @@ public class LeftMenuFragment extends Fragment {
                 Drawable drawable = getResources().getDrawable(R.drawable.scan_btn_bg);
                 btnScan.setBackground(drawable);
             }
-            //监听连接
+            //监听配对状态
+            if (action.equals(BluetoothDevice.ACTION_BOND_STATE_CHANGED)){
+                int state = intent.getIntExtra(BluetoothDevice.EXTRA_BOND_STATE,BluetoothDevice.BOND_NONE);
+                //配对成功
+                if (state==BluetoothDevice.BOND_BONDED){
+                    LogUtil.v(tag,"第一次配对成功");
+                    BluetoothDevice device = intent.getParcelableExtra(BluetoothDevice.EXTRA_DEVICE);
+                    mAvailableDeviceList.remove(device);
+                    mAvailableDeviceAdapter.notifyDataSetChanged();
+                    mPairedDeviceList.add(device);
+                    mPairedDeviceAdapter.notifyItemChanged(mPairedDeviceList.size()-1);
+                }
+            }
+            //监听连接,特指监听通信线程连接
             if (action.equals(BluetoothConnectThread.ACTION_BLUETOOTH_CONNECT)){
                 LogUtil.v(tag,"客户端连入成功");
+                setBluetoothConnectState(true);
                 BluetoothSocket socket = mBluetoothConnectThread.getBluetoothSocket();
                 if (socket == null){
                     LogUtil.v(tag,"GG socket 为空");
@@ -240,6 +264,17 @@ public class LeftMenuFragment extends Fragment {
                 ExtraDataStorage.isServiceStarted = true;
                 Intent intent2 = new Intent(ACTION_BLUETOOTH_CONNECT);
                 getActivity().sendBroadcast(intent2);
+            }
+            //系统api中的监听连接
+            if (action.equals(BluetoothAdapter.ACTION_CONNECTION_STATE_CHANGED)){
+                int state = intent.getIntExtra(BluetoothAdapter.EXTRA_CONNECTION_STATE,BluetoothAdapter.ERROR);
+                if (state == BluetoothAdapter.STATE_CONNECTED){
+                    LogUtil.v(tag,"来自系统API 蓝牙设备连接");
+                }
+                if (state == BluetoothAdapter.STATE_DISCONNECTED){
+                    LogUtil.v(tag,"来自系统Api 蓝牙设备断开连接");
+                    setBluetoothConnectState(false);
+                }
             }
         }
     };
@@ -268,5 +303,16 @@ public class LeftMenuFragment extends Fragment {
             tvAvailableDevices.setVisibility(View.INVISIBLE);
             rvAvailableDevices.setVisibility(View.INVISIBLE);
         }
+    }
+
+    private void setBluetoothConnectState(boolean state){
+        SharedPreferences.Editor editor = getContext()
+                .getSharedPreferences("connectstate",Context.MODE_PRIVATE).edit();
+        editor.putBoolean(BLUETOOTH_CONNECT_STATE,state);
+        editor.apply();
+    }
+    private boolean getBluetoothConnectState(){
+        SharedPreferences sharedPreferences = getContext().getSharedPreferences("connectstate",Context.MODE_PRIVATE);
+        return sharedPreferences.getBoolean(BLUETOOTH_CONNECT_STATE,false);
     }
 }

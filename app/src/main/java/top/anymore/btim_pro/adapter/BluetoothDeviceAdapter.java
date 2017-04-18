@@ -17,13 +17,13 @@ import top.anymore.btim_pro.R;
 import top.anymore.btim_pro.bluetooth.BluetoothConnectThread;
 
 /**
+ * 这个类是LeftFragment中的RecylerView的适配器
  * Created by anymore on 17-3-24.
  */
-
 public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDeviceAdapter.ViewHolder>{
-    private List<BluetoothDevice> mDeviceList;
-    private BluetoothConnectThread mBluetoothConnectThread;
-    private Map<BluetoothDevice,Boolean> isConnected;
+    private List<BluetoothDevice> mDeviceList;//数据源
+    private BluetoothConnectThread mBluetoothConnectThread;//连接线程
+    private Map<BluetoothDevice,Boolean> isConnected;//判断某一个设备是否发起览连接请求
     public BluetoothDeviceAdapter(List<BluetoothDevice> mDeviceList,BluetoothConnectThread mBluetoothConnectThread) {
         this.mDeviceList = mDeviceList;
         this.mBluetoothConnectThread = mBluetoothConnectThread;
@@ -39,7 +39,7 @@ public class BluetoothDeviceAdapter extends RecyclerView.Adapter<BluetoothDevice
             @Override
             public void onClick(View v) {
                 BluetoothDevice device = mDeviceList.get(holder.getAdapterPosition());
-                if (isConnected.get(device) == null){
+                if (isConnected.get(device) == null){//判断是否发起了连接请求
                     mBluetoothConnectThread.setTarget(device);
                     mBluetoothConnectThread.start();
                     isConnected.put(device,Boolean.TRUE);

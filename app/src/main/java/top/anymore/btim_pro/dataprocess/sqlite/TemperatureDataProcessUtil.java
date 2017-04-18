@@ -11,7 +11,7 @@ import java.util.List;
 import top.anymore.btim_pro.entity.TemperatureDataEntity;
 import top.anymore.btim_pro.logutil.LogUtil;
 
-/**
+/**温度数据数据库管理工具类
  * Created by anymore on 17-4-1.
  */
 
@@ -26,6 +26,11 @@ public class TemperatureDataProcessUtil {
         mTemperatureSQLiteHelper = new TemperatureSQLiteHelper(mContext,databaseName,null,1);
         mSqLiteDatabase = mTemperatureSQLiteHelper.getWritableDatabase();
     }
+
+    /**
+     * 添加一条数据
+     * @param entity
+     */
     public void addData(TemperatureDataEntity entity){
         ContentValues values = new ContentValues();
         values.put("room_id",entity.getRoom_id());
@@ -36,12 +41,25 @@ public class TemperatureDataProcessUtil {
         values.put("is_handle",entity.getIs_handle());
         mSqLiteDatabase.insert("TEMPERATUREDATA",null,values);
     }
+
+    /**
+     * 添加一组数据
+     * @param entities
+     */
     public void addData(List<TemperatureDataEntity> entities){
         LogUtil.v(tag,"xixixix");
         for (TemperatureDataEntity entity : entities) {
             addData(entity);
         }
     }
+
+    /**
+     * 获取一组数据，根据房间号，跳过的条目，获取条目的数量确定
+     * @param room_id
+     * @param skip
+     * @param count
+     * @return
+     */
     public List<TemperatureDataEntity> getTemperatureDatas(int room_id,int skip,int count){
         Cursor cursor = mSqLiteDatabase.query("TEMPERATUREDATA",null,
                 TemperatureSQLiteHelper.ROOM_ID+" = ?",
@@ -62,6 +80,12 @@ public class TemperatureDataProcessUtil {
         cursor.close();
         return entities;
     }
+
+    /**
+     * 获取这个房间的所有数据条目
+     * @param room_id
+     * @return
+     */
     public List<TemperatureDataEntity> getTemperatureDatas(int room_id){
         Cursor cursor = mSqLiteDatabase.query("TEMPERATUREDATA",null,
                 TemperatureSQLiteHelper.ROOM_ID+" = ?",new String[]{""+room_id},
@@ -81,6 +105,18 @@ public class TemperatureDataProcessUtil {
         cursor.close();
         return entities;
     }
+
+    /**
+     * 根据条件获取数据
+     * @param columns
+     * @param selection
+     * @param selectionArgs
+     * @param groupBy
+     * @param having
+     * @param orderBy
+     * @param limit
+     * @return
+     */
     public List<TemperatureDataEntity> getDatas(String[] columns, String selection,
                                                 String[] selectionArgs, String groupBy, String having,
                                                 String orderBy, String limit){

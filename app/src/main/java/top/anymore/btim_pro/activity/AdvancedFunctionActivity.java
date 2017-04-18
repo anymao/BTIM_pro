@@ -5,6 +5,7 @@ import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
+import android.content.SharedPreferences;
 import android.support.v7.app.AppCompatActivity;
 import android.os.Bundle;
 import android.support.v7.widget.SwitchCompat;
@@ -17,6 +18,7 @@ import top.anymore.btim_pro.bluetooth.BluetoothServerThread;
 import top.anymore.btim_pro.bluetooth.BluetoothUtil;
 import top.anymore.btim_pro.bluetooth.CommunicationThread;
 import top.anymore.btim_pro.bluetooth.CommunicationThreadManager;
+import top.anymore.btim_pro.fragment.LeftMenuFragment;
 import top.anymore.btim_pro.service.DataProcessService;
 import top.anymore.btim_pro.service.TemperatureDataService;
 
@@ -41,11 +43,13 @@ public class AdvancedFunctionActivity extends AppCompatActivity {
         }else {
             scOpenServer.setChecked(false);
         }
+        //读取上一次的状态
         if (ExtraDataStorage.isOpenToFind){
             scVisiable.setChecked(true);
         }else {
             scVisiable.setChecked(false);
         }
+        //设置监听器
         scOpenServer.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -70,7 +74,9 @@ public class AdvancedFunctionActivity extends AppCompatActivity {
         });
         //注册广播接收器
         IntentFilter filter = new IntentFilter();
+        //扫描模式改变
         filter.addAction(BluetoothAdapter.ACTION_SCAN_MODE_CHANGED);
+        //连接状态监听，特指建立通信进程
         filter.addAction(BluetoothServerThread.ACTION_BLUETOOTH_CONNECT);
 //        filter.setPriority(100);
         registerReceiver(receiver,filter);
@@ -79,6 +85,7 @@ public class AdvancedFunctionActivity extends AppCompatActivity {
     @Override
     protected void onDestroy() {
         super.onDestroy();
+        //反注册广播接收器
         unregisterReceiver(receiver);
     }
 
@@ -97,19 +104,34 @@ public class AdvancedFunctionActivity extends AppCompatActivity {
                     ExtraDataStorage.isOpenToFind = false;
                 }
             }
+            //客户端连接动作
             if (action == BluetoothServerThread.ACTION_BLUETOOTH_CONNECT){
                 Toast.makeText(AdvancedFunctionActivity.this,"客户端连入成功...",Toast.LENGTH_SHORT).show();
                 CommunicationThread thread= new CommunicationThread(mBluetoothServerThread.getBluetoothSocket());
                 CommunicationThreadManager.addCommunicationThread(thread);
+                setBluetoothConnectState(true);
 //                ExtraDataStorage.isConnected = true;
+                //启动后台通信进程
                 Intent intent1 = new Intent(AdvancedFunctionActivity.this, DataProcessService.class);
                 startService(intent1);
 //                Intent intent1 = new Intent(AdvancedFunctionActivity.this, TemperatureDataService.class);
 //                startService(intent1);
                 ExtraDataStorage.isServiceStarted = true;
                 Intent intent2 = new Intent(ACTION_BLUETOOTH_CONNECT);
+                //通知主页面：客户端连接进来了
                 sendBroadcast(intent2);
             }
         }
     };
+
+    /**
+     * 为了将蓝牙的连接动作持久化保存，我选择了使用SharedPreferences，
+     * 以便于在重新回到前台时候能够正确获得蓝牙连接状态
+     * @param state
+     */
+    private void setBluetoothConnectState(boolean state){
+        SharedPreferences.Editor editor = getSharedPreferences("connectstate",Context.MODE_PRIVATE).edit();
+        editor.putBoolean(LeftMenuFragment.BLUETOOTH_CONNECT_STATE,state);
+        editor.apply();
+    }
 }

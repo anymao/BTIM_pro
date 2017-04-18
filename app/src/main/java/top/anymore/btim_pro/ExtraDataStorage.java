@@ -1,6 +1,7 @@
 package top.anymore.btim_pro;
 
 /**
+ * 存储程序运行时候的额外数据
  * Created by anymore on 17-3-28.
  */
 

@@ -31,6 +31,9 @@ import top.anymore.btim_pro.entity.Message;
 import top.anymore.btim_pro.entity.TemperatureDataEntity;
 import top.anymore.btim_pro.logutil.LogUtil;
 
+/**
+ * 后台的数据处理服务
+ */
 public class DataProcessService extends Service {
     public static final String ACTION_DATA_STORAGED = "top.anymore.btim_pro.action_data_storaged";
     public static final String ACTION_TEMPER_OVER_WARN_TEMPER = "top.anymore.btim_pro.action_temper_over_warn_temper";
@@ -68,6 +71,7 @@ public class DataProcessService extends Service {
                                 int is_danger = (temper_data[i] > warn_temper)?TemperatureDataEntity.STATE_DANGER:TemperatureDataEntity.STATE_NOT_DANGER;
                                 int is_handle = (is_danger == TemperatureDataEntity.STATE_DANGER)?TemperatureDataEntity.STATE_NOT_HANDLE:TemperatureDataEntity.STATE_HANDLE;
                                 TemperatureDataEntity entity = new TemperatureDataEntity(i,time,temper_data[i],warn_temper,is_danger,is_handle);
+                                //判断这一批消息中是否存在异常消息
                                 if (is_danger == TemperatureDataEntity.STATE_DANGER){
                                     isDanger = true;
                                     dangerMessage.append("房间："+i+" 温度： "+temper_data[i]+",");
@@ -80,24 +84,28 @@ public class DataProcessService extends Service {
                                 dangerMessage.append(",已经超过预警温度，请您查看！");
                                 Intent intent = new Intent(ACTION_TEMPER_OVER_WARN_TEMPER);
                                 intent.putExtra(EXTRA_MESSAGE,dangerMessage.toString());
-                                sendOrderedBroadcast(intent,null);
+                                sendOrderedBroadcast(intent,null);//有序广播
                             }
-
+                            //写入数据库
                             mTemperatureDataProcessUtil.addData(entities);
+                            //发送数据修改广播，如果在前台，请更新UI
                             Intent intent = new Intent(ACTION_DATA_STORAGED);
                             sendBroadcast(intent);
                         }
                     }).start();
                     break;
+                //发送数据
                 case CommunicationThread.ACTION_MSG_SENG:
                     new Thread(new Runnable() {
                         @Override
                         public void run() {
                             LogUtil.v(tag,"msg_content:"+msg_content);
+                            //构建Message实体类，并写入数据库
                             Date msg_time = new Date(System.currentTimeMillis());
                             int msg_type = Message.MESSAGE_TYPE_SEND;
                             Message message = new Message(msg_time,msg_content,msg_type);
                             mDataProcessUtil.addData(message);
+                            //通知界面更新
                             Intent intent = new Intent(ACTION_MESSAGE_SEND);
                             intent.putExtra(EXTRA_MESSAGE_SEND,message);
                             sendBroadcast(intent);
@@ -164,7 +172,7 @@ public class DataProcessService extends Service {
             }
         };
         IntentFilter filter = new IntentFilter(ACTION_TEMPER_OVER_WARN_TEMPER);
-        filter.setPriority(50);
+        filter.setPriority(50);//低优先级，方便界面活动拦截
         registerReceiver(dangerMessageReceiver,filter);
     }
 
@@ -175,7 +183,9 @@ public class DataProcessService extends Service {
         if (mCommunicationThread == null){
             LogUtil.v(tag,"GG");
         }
+        //设置Handler异步处理
         mCommunicationThread.setHandler(mHandler);
+        //开启线程
         mCommunicationThread.start();
         LogUtil.v(tag,"mCommunicationThread.start();");
         return mBinder;
@@ -195,26 +205,32 @@ public class DataProcessService extends Service {
             mCommunicationThread.send(msg_content);
         }
     }
+
+    /**
+     * 发送广播，如果这里接收到广播，那么一定是后台
+     */
     private BroadcastReceiver dangerMessageReceiver = new BroadcastReceiver() {
         @Override
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(DataProcessService.ACTION_TEMPER_OVER_WARN_TEMPER)){
-                String msg = intent.getStringExtra(DataProcessService.EXTRA_MESSAGE);
+                //发送通知单
+                String msg = intent.getStringExtra(DataProcessService.EXTRA_MESSAGE);//解析广播的附加数据
                 NotificationManager manager = (NotificationManager) getSystemService(NOTIFICATION_SERVICE);
-                Intent intent1 = new Intent(context,MainActivity.class);
+                Intent intent1 = new Intent(context,MainActivity.class);//通知单的跳转方向
                 PendingIntent pi = PendingIntent.getActivities(context,0,new Intent[]{intent1},0);
                 Notification notification = new NotificationCompat.Builder(context)
-                        .setContentTitle("温度异常提醒")
-                        .setContentText(msg)
-                        .setWhen(System.currentTimeMillis())
-                        .setSmallIcon(R.mipmap.ic_launcher)
-                        .setLargeIcon(BitmapFactory.decodeResource(getResources(),
+                        .setContentTitle("温度异常提醒")//标题
+                        .setContentText(msg)//信息
+                        .setWhen(System.currentTimeMillis())//时间
+                        .setSmallIcon(R.mipmap.ic_launcher)//图标
+                        .setLargeIcon(BitmapFactory.decodeResource(getResources(),//大图标
                                 R.mipmap.ic_launcher))
-                        .setContentIntent(pi)
-                        .setAutoCancel(true)
-                        .setPriority(NotificationCompat.PRIORITY_MAX)
-                        .setDefaults(NotificationCompat.DEFAULT_ALL)
+                        .setContentIntent(pi)//意图
+                        .setAutoCancel(true)//点击后自动取消
+                        .setPriority(NotificationCompat.PRIORITY_MAX)//优先级最高
+                        .setDefaults(NotificationCompat.DEFAULT_ALL)//系统默认的通知方式
+                        .setTicker("温度异常提醒！！！")
                         .build();
                 manager.notify(1,notification);
             }

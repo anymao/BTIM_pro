@@ -12,7 +12,7 @@ import java.io.OutputStream;
 
 import top.anymore.btim_pro.logutil.LogUtil;
 
-/**
+/**蓝牙通道建立之后，用于接收和发送数据的类
  * Created by anymore on 17-3-24.
  */
 
@@ -75,10 +75,16 @@ public class CommunicationThread extends Thread{
             }
         }
     }
+
+    /**
+     * 用于发送数据的方法
+     * @param s
+     */
     public void send(String s){
         try {
             byte[] bytes = s.getBytes();
             mOutputStream.write(bytes);
+            //发送览数据之后，会异步进行之后的方法
             Message msg = Message.obtain();
             msg.what = ACTION_MSG_SENG;
             msg.obj = s;
@@ -87,6 +93,7 @@ public class CommunicationThread extends Thread{
             e.printStackTrace();
         }
     }
+    //关闭线程
     public void cancel(){
         try {
             mInputStream.close();

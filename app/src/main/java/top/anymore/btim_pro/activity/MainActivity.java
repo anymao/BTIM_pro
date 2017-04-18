@@ -1,17 +1,12 @@
 package top.anymore.btim_pro.activity;
 
-import android.app.Notification;
-import android.app.NotificationManager;
-import android.app.PendingIntent;
 import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.res.Configuration;
-import android.graphics.BitmapFactory;
 import android.os.Bundle;
 import android.support.annotation.Nullable;
-import android.support.v4.app.NotificationCompat;
 import android.support.v4.view.GravityCompat;
 import android.support.v4.widget.DrawerLayout;
 import android.support.v7.app.ActionBar;
@@ -50,14 +45,21 @@ public class MainActivity extends AppCompatActivity {
         setContentView(R.layout.activity_main);
         //取消后台消息
 //        unregisterReceiver(dangerMessageReceiver);
+        //初始化界面
         initViews();
+        //初始化监听器
         initeceiver();
         //test
-        ExtraDataStorage.isUIAlive = true;
+//        ExtraDataStorage.isUIAlive = true;
     }
 
     private void initeceiver() {
+        //这里利用了一下有序广播。我想实现的是类似于QQ 的消息提醒功能，当处于前台时候，不会在通知单提示消息
+        //当处于后台时候才在通知单通知消息
+        //于是，在前台Activity 中注册一个广播，并且接收到这个广播之后，拦截广播，而真正会发送通知单消息的动作在后台服务中
+        //那么，当前台结束，那么此广播会反注册，这时候后台才会接受到，才会发送通知
         IntentFilter filter = new IntentFilter(DataProcessService.ACTION_TEMPER_OVER_WARN_TEMPER);
+        //确保优先级比较高，才会先接收到广播
         filter.setPriority(100);
         registerReceiver(receiver,filter);
     }
@@ -261,6 +263,7 @@ public class MainActivity extends AppCompatActivity {
         public void onReceive(Context context, Intent intent) {
             String action = intent.getAction();
             if (action.equals(DataProcessService.ACTION_TEMPER_OVER_WARN_TEMPER)){
+                //拦截广播
                 abortBroadcast();
             }
         }

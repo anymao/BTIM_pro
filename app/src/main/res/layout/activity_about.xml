@@ -11,11 +11,14 @@
         android:layout_height="wrap_content"
         android:src="@mipmap/head_icon"
         android:layout_marginTop="40dp"/>
+    <!--android:textAllCaps="false"-->
+    <!--这个会控制文本是否全部大写-->
     <Button
         android:id="@+id/btn_weibo"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="@string/holo_mina"
+        android:textAllCaps="false"
         android:background="@color/transparent"
         android:layout_marginTop="20dp"
         android:textColor="@color/purple"/>

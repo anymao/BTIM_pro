@@ -11,7 +11,7 @@ import java.util.List;
 
 import top.anymore.btim_pro.entity.Message;
 
-/**
+/**数据库操作工具类
  * Created by anymore on 17-3-26.
  */
 

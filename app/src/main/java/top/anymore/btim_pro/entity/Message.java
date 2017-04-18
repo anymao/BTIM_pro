@@ -5,6 +5,7 @@ import java.io.Serializable;
 import java.util.Date;
 
 /**
+ * 发送的数据实体类，包括时间，内容，方向等内容
  * Created by anymore on 17-3-26.
  */
 

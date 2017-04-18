@@ -12,14 +12,18 @@ import top.anymore.btim_pro.R;
 import top.anymore.btim_pro.dataprocess.WarnTemperature;
 
 /**
+ * 这个是与RightFragment中recylerView的适配器
  * Created by anymore on 17-4-5.
  */
 
 public class RoomWarnTemperAdapter extends RecyclerView.Adapter<RoomWarnTemperAdapter.ViewHolder>{
     private Context mContext;
 
+    //我用了一个全局变量将每个房间的警戒温度存储在一个数组中，当这个温度改变的时候，会通过SharedPreferences写入
+    //以达到持久化的目的
     public RoomWarnTemperAdapter(Context mContext) {
         this.mContext = mContext;
+        //初始化获取警戒温度
         WarnTemperature.initWarnTempers(mContext);
     }
     @Override
@@ -30,12 +34,17 @@ public class RoomWarnTemperAdapter extends RecyclerView.Adapter<RoomWarnTemperAd
 
     @Override
     public void onBindViewHolder(final ViewHolder holder, final int position) {
+        //设置进度条范围0-200
         holder.sbWarnTemper.setMax(200);
+        //获取指定房间的警戒温度
         int progress = (int) WarnTemperature.warnTempers[position];
+        //设置警戒温度
         holder.sbWarnTemper.setProgress(progress);
         holder.tvRoomId.setText("room: "+position);
         holder.tvWarnTemper.setText(progress+"℃");
+        //设置进度条拖动监听
         holder.sbWarnTemper.setOnSeekBarChangeListener(new SeekBar.OnSeekBarChangeListener() {
+            //当进度条拖动时候
             @Override
             public void onProgressChanged(SeekBar seekBar, int progress, boolean fromUser) {
                 holder.tvWarnTemper.setText(progress+"℃");
@@ -45,7 +54,7 @@ public class RoomWarnTemperAdapter extends RecyclerView.Adapter<RoomWarnTemperAd
             public void onStartTrackingTouch(SeekBar seekBar) {
 
             }
-
+            //当进度条停止拖动的时候
             @Override
             public void onStopTrackingTouch(SeekBar seekBar) {
                 int endProgress = seekBar.getProgress();

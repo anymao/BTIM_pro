@@ -11,6 +11,7 @@ import com.facebook.stetho.rhino.JsRuntimeReplFactoryBuilder;
 import okhttp3.OkHttpClient;
 
 /**
+ * 测试框架，正式版不使用
  * Created by anymore on 17-3-26.
  */
 

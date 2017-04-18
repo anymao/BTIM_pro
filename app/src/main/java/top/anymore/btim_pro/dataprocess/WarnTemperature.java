@@ -6,6 +6,7 @@ import android.content.SharedPreferences;
 import top.anymore.btim_pro.logutil.LogUtil;
 
 /**
+ * 警戒温度类
  * Created by anymore on 17-4-2.
  */
 
@@ -14,6 +15,11 @@ public class WarnTemperature {
     public static double[] warnTempers = new double[8];
     public static double defaultWarnTemper = 50;
     private static boolean isInited = false;
+
+    /**
+     * 初始化所有警戒温度，也就是从SharedPreferences读取数据
+     * @param context
+     */
     public static void initWarnTempers(Context context){
         SharedPreferences sharedPreferences = context.getSharedPreferences("WARN_TEMPER_SETTING_DATA", Context.MODE_PRIVATE);
         for (int i = 0; i < 8; i++) {
@@ -25,6 +31,13 @@ public class WarnTemperature {
     public static boolean getIsInited(){
         return isInited;
     }
+
+    /**
+     * 修改警戒温度
+     * @param context
+     * @param room_id
+     * @param temper
+     */
     public static void changeWarnTemper(Context context,int room_id,double temper){
         warnTempers[room_id] = temper;
         SharedPreferences.Editor editor = context.getSharedPreferences("WARN_TEMPER_SETTING_DATA", Context.MODE_PRIVATE).edit();

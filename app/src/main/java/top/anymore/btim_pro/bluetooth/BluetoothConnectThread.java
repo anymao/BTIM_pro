@@ -12,6 +12,7 @@ import java.util.UUID;
 import top.anymore.btim_pro.logutil.LogUtil;
 
 /**
+ * 蓝牙作为客户端去连接服务端的线程
  * Created by anymore on 17-3-24.
  */
 
@@ -36,6 +37,11 @@ public class BluetoothConnectThread extends Thread{
             LogUtil.v(tag,"本机拥有蓝牙设备");
         }
     }
+
+    /**
+     * device作为被连接的目标设备，即服务器
+     * @param device
+     */
     public void setTarget(BluetoothDevice device){
         mBluetoothDevice = device;
     }
@@ -55,6 +61,11 @@ public class BluetoothConnectThread extends Thread{
             e.printStackTrace();
         }
     }
+
+    /**
+     * 返回BluetoothSocket，这个作为连接的依据
+     * @return
+     */
     public BluetoothSocket getBluetoothSocket(){
         return mSocket;
     }

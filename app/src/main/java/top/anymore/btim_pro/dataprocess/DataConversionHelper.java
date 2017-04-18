@@ -4,6 +4,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
+ * 辅助类，用于数据转换
  * Created by anymore on 17-3-30.
  */
 
@@ -26,8 +27,13 @@ public class DataConversionHelper {
         }
         return result;
     }
+
+    /**
+     * 将long类型的时间转换成yyyy-MM-dd hh:mm:ss类型字符串
+     * @param time
+     * @return
+     */
     public static String long2Date(long time){
        return format.format(new Date(time));
-
     }
 }

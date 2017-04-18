@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
+ * 用于管理连接之后的线程
  * Created by anymore on 17-3-24.
  */
 

@@ -16,12 +16,13 @@ import top.anymore.btim_pro.activity.RoomDetailActivity;
 import top.anymore.btim_pro.logutil.LogUtil;
 
 /**
+ * 这个是ContentFragment的RecyclerView的适配器
  * Created by anymore on 17-4-3.
  */
 
 public class RoomsStateAdapter extends RecyclerView.Adapter<RoomsStateAdapter.ViewHolder> {
     private static final String tag = "RoomsStateAdapter";
-    private List<SpannableString> strings;
+    private List<SpannableString> strings;//数据源
     private Context mContext;
     public RoomsStateAdapter(List<SpannableString> strings,Context context) {
         this.strings = strings;
@@ -43,6 +44,7 @@ public class RoomsStateAdapter extends RecyclerView.Adapter<RoomsStateAdapter.Vi
         holder.tvRoomState.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
+                //跳转到RoomDetailActivity中，并且携带roomid作为唯一识别符号
                 Intent intent = new Intent(mContext, RoomDetailActivity.class);
                 intent.putExtra("room_id",position);
                 mContext.startActivity(intent);

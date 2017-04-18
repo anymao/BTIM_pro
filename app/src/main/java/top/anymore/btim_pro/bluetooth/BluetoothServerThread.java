@@ -11,7 +11,7 @@ import java.util.UUID;
 
 import top.anymore.btim_pro.logutil.LogUtil;
 
-/**
+/**蓝牙作为服务端，开启此线程，蓝牙才能被客户端连接
  * Created by anymore on 17-3-24.
  */
 

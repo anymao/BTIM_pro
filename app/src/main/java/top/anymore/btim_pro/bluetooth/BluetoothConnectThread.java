@@ -19,7 +19,7 @@ import top.anymore.btim_pro.logutil.LogUtil;
 public class BluetoothConnectThread extends Thread{
     private static final String tag = "BluetoothConnectThread";
     //据说这个是串口通信的UUID
-    public static final String UUID_CONNECT_DEFAULT = "00001101-0000-1000-8000-00805F9B34FB";
+    public static final String UUID_CONNECT_DEFAULT = "d4ae77eb-923f-4723-8fdf-720905275221";
     public static final String ACTION_BLUETOOTH_CONNECT = "top.anymore.btim_pro.bluetooth.bluetoothconnectthread.action_bluetooth_connect";
     private String uuid_connect = UUID_CONNECT_DEFAULT;
     private BluetoothAdapter mBluetoothAdapter;

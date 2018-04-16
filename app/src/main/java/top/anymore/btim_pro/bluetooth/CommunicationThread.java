@@ -1,16 +1,27 @@
 package top.anymore.btim_pro.bluetooth;
 
 import android.bluetooth.BluetoothSocket;
+import android.graphics.Bitmap;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.Message;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.BufferedInputStream;
+import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
+import java.io.DataInputStream;
+import java.io.DataOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.OutputStream;
 
+import top.anymore.btim_pro.logutil.Base64Utils;
 import top.anymore.btim_pro.logutil.LogUtil;
+import top.anymore.btim_pro.logutil.Test;
 
 /**蓝牙通道建立之后，用于接收和发送数据的类
  * Created by anymore on 17-3-24.
@@ -58,13 +69,15 @@ public class CommunicationThread extends Thread{
         BufferedReader br = new BufferedReader(new InputStreamReader(mInputStream));
         String line = "";
         try {
-            while ((line=br.readLine()) != null){
-                LogUtil.v(tag,line);
-                line += "\n";
+            while ((line = br.readLine()) != null){
+                LogUtil.e(tag,"changdu = " + line.length());
+                LogUtil.e(tag,line);
+                Test.saveImage(line);
+                /*line += "\n";
                 Message msg = Message.obtain();
                 msg.what = ACTION_MSG_GET;
                 msg.obj = line;
-                mHandler.sendMessage(msg);
+                mHandler.sendMessage(msg);*/
             }
         } catch (IOException e) {
             e.printStackTrace();
@@ -82,14 +95,38 @@ public class CommunicationThread extends Thread{
      */
     public void send(String s){
         try {
-            byte[] bytes = s.getBytes();
-            mOutputStream.write(bytes);
+
+           /* StringBuffer sb = new StringBuffer();
+            for (int i = 0 ; i < 25 * 1024; i++){
+                sb.append("abc1234567");
+            }
+            byte[] bytes = sb.toString().getBytes();
+            LogUtil.e(tag,"bytes.length = " + bytes.length);*/
+            //Test.readImage("/sdcard/a.jpg");
+            /*String data = Test.readImage(Environment.getExternalStorageDirectory().getAbsolutePath() + "/a.jpg");
+            byte[] bytes1 = data.getBytes();*/
+            //mOutputStream.write(s.getBytes());
+            mOutputStream.write(Test.readImage(Environment.getExternalStorageDirectory().getAbsolutePath() + "/a.jpg").getBytes());
+            /*DataOutputStream dataOutputStream = new DataOutputStream(new BufferedOutputStream(mOutputStream));
+            String[] str = Test.readImage(Environment.getExternalStorageDirectory().getAbsolutePath() + "/a.jpg",65535);
+            for (String tep: str) {
+                dataOutputStream.writeUTF(tep);
+            }
+            dataOutputStream.flush();
+
+            LogUtil.e(tag,"start = " + str[0].substring(0,1));
+            LogUtil.e(tag,"end = " + str[str.length - 1].substring(str[str.length - 1].length() - 1));*/
+
+
+            //dataOutputStream.writeUTF(data);
+
+            LogUtil.d(tag,"发送base64成功");
             //发送览数据之后，会异步进行之后的方法
             Message msg = Message.obtain();
             msg.what = ACTION_MSG_SENG;
             msg.obj = s;
             mHandler.sendMessage(msg);
-        } catch (IOException e) {
+        } catch (Exception e) {
             e.printStackTrace();
         }
     }

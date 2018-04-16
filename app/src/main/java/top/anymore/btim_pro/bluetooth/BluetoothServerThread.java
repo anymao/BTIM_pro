@@ -17,7 +17,7 @@ import top.anymore.btim_pro.logutil.LogUtil;
 
 public class BluetoothServerThread extends Thread{
     private static final String tag = "BluetoothServerThread";
-    public static final String UUID_SERVER_DEFAULT = "00001101-0000-1000-8000-00805F9B34FB";
+    public static final String UUID_SERVER_DEFAULT = "d4ae77eb-923f-4723-8fdf-720905275221";
     public static final String ACTION_BLUETOOTH_CONNECT = "top.anymore.btim_pro.bluetooth.bluetoothserverthread.action_bluetooth_connect";
     private String uuid_server = UUID_SERVER_DEFAULT;
     private BluetoothAdapter mBluetoothAdapter;

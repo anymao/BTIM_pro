@@ -55,44 +55,45 @@ public class DataProcessService extends Service {
             //**************
             switch (msg.what){
                 case CommunicationThread.ACTION_MSG_GET:
-                    new Thread(new Runnable() {
-                        @Override
-                        public void run() {
-                            double[] temper_data = DataConversionHelper.Strings2doubles(msg_content);
-                            long time = System.currentTimeMillis();
-                            List<TemperatureDataEntity> entities = new ArrayList<TemperatureDataEntity>();
-                            boolean isDanger = false;
-                            StringBuilder dangerMessage = new StringBuilder();
-                            for (int i = 0; i < temper_data.length; i++) {
-                                if (!WarnTemperature.getIsInited()){
-                                    WarnTemperature.initWarnTempers(getApplicationContext());
-                                }
-                                double warn_temper = WarnTemperature.warnTempers[i];
-                                int is_danger = (temper_data[i] > warn_temper)?TemperatureDataEntity.STATE_DANGER:TemperatureDataEntity.STATE_NOT_DANGER;
-                                int is_handle = (is_danger == TemperatureDataEntity.STATE_DANGER)?TemperatureDataEntity.STATE_NOT_HANDLE:TemperatureDataEntity.STATE_HANDLE;
-                                TemperatureDataEntity entity = new TemperatureDataEntity(i,time,temper_data[i],warn_temper,is_danger,is_handle);
-                                //判断这一批消息中是否存在异常消息
-                                if (is_danger == TemperatureDataEntity.STATE_DANGER){
-                                    isDanger = true;
-                                    dangerMessage.append("房间："+i+" 温度： "+temper_data[i]+",");
-                                }
-                                entities.add(entity);
-                            }
-                            //当某个房间温度超过预警温度时候，发出广播
-                            //在MainActivity的
-                            if (isDanger){
-                                dangerMessage.append(",已经超过预警温度，请您查看！");
-                                Intent intent = new Intent(ACTION_TEMPER_OVER_WARN_TEMPER);
-                                intent.putExtra(EXTRA_MESSAGE,dangerMessage.toString());
-                                sendOrderedBroadcast(intent,null);//有序广播
-                            }
-                            //写入数据库
-                            mTemperatureDataProcessUtil.addData(entities);
-                            //发送数据修改广播，如果在前台，请更新UI
-                            Intent intent = new Intent(ACTION_DATA_STORAGED);
-                            sendBroadcast(intent);
-                        }
-                    }).start();
+                    LogUtil.d(tag,"收到数据:"+msg_content);
+//                    new Thread(new Runnable() {
+//                        @Override
+//                        public void run() {
+//                            double[] temper_data = DataConversionHelper.Strings2doubles(msg_content);
+//                            long time = System.currentTimeMillis();
+//                            List<TemperatureDataEntity> entities = new ArrayList<TemperatureDataEntity>();
+//                            boolean isDanger = false;
+//                            StringBuilder dangerMessage = new StringBuilder();
+//                            for (int i = 0; i < temper_data.length; i++) {
+//                                if (!WarnTemperature.getIsInited()){
+//                                    WarnTemperature.initWarnTempers(getApplicationContext());
+//                                }
+//                                double warn_temper = WarnTemperature.warnTempers[i];
+//                                int is_danger = (temper_data[i] > warn_temper)?TemperatureDataEntity.STATE_DANGER:TemperatureDataEntity.STATE_NOT_DANGER;
+//                                int is_handle = (is_danger == TemperatureDataEntity.STATE_DANGER)?TemperatureDataEntity.STATE_NOT_HANDLE:TemperatureDataEntity.STATE_HANDLE;
+//                                TemperatureDataEntity entity = new TemperatureDataEntity(i,time,temper_data[i],warn_temper,is_danger,is_handle);
+//                                //判断这一批消息中是否存在异常消息
+//                                if (is_danger == TemperatureDataEntity.STATE_DANGER){
+//                                    isDanger = true;
+//                                    dangerMessage.append("房间："+i+" 温度： "+temper_data[i]+",");
+//                                }
+//                                entities.add(entity);
+//                            }
+//                            //当某个房间温度超过预警温度时候，发出广播
+//                            //在MainActivity的
+//                            if (isDanger){
+//                                dangerMessage.append(",已经超过预警温度，请您查看！");
+//                                Intent intent = new Intent(ACTION_TEMPER_OVER_WARN_TEMPER);
+//                                intent.putExtra(EXTRA_MESSAGE,dangerMessage.toString());
+//                                sendOrderedBroadcast(intent,null);//有序广播
+//                            }
+//                            //写入数据库
+//                            mTemperatureDataProcessUtil.addData(entities);
+//                            //发送数据修改广播，如果在前台，请更新UI
+//                            Intent intent = new Intent(ACTION_DATA_STORAGED);
+//                            sendBroadcast(intent);
+//                        }
+//                    }).start();
                     break;
                 //发送数据
                 case CommunicationThread.ACTION_MSG_SENG:
